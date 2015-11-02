@@ -1,18 +1,12 @@
 package me.shib.java.telegram.filemanager.worker;
 
 import java.io.File;
-import java.io.IOException;
 
-import com.nudanam.java.telegram.bot.service.TelegramBotService;
-import com.nudanam.java.telegram.bot.types.ReplyKeyboardMarkup;
-import com.nudanam.java.telegram.bot.types.Update;
-
-import me.shib.java.telegram.filemanager.navigator.KeyBoardAndResponseText;
 import me.shib.java.telegram.filemanager.navigator.UserDir;
 
 public class Start {
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 		String homeDirPath = null;
 		if(args.length == 0) {
 			homeDirPath = System.getProperty("user.dir");
@@ -26,28 +20,23 @@ public class Start {
 		}
 		if(args.length <= 1) {
 			UserDir.homeDir = new File(homeDirPath);
-			TelegramBotService tbs = new TelegramBotService(Config.botApiToken);
-			while(true) {
-				try {
-					Update upd = MessageListener.getUpdate();
-					if(upd.getMessage().getText() == null) {
-						tbs.sendMessage(upd.getMessage().getChat().getId(), "Please input a text");
-					}
-					else {
-						UserDir ud = UserBase.getUserDir(upd.getMessage().getChat().getUser().getId());
-						ud.navigate(upd.getMessage().getText());
-						KeyBoardAndResponseText kbt = ud.getCurrentResponse();
-						String[] fileNameList = kbt.getFileList();
-						String[][] keyboard = new String[fileNameList.length][1];
-						for(int i = 0; i < fileNameList.length; i++) {
-							keyboard[i][0] = fileNameList[i];
-						}
-						tbs.sendMessage(ud.getUserId(), kbt.getResponse(), null, true, 0, new ReplyKeyboardMarkup(keyboard));
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+			FileManagerThread[] fmts = new FileManagerThread[Config.fileManagerThreads];
+			for(int i = 0; i < Config.fileManagerThreads; i++) {
+				fmts[i] = new FileManagerThread();
+				System.out.println("Starting the File Manager Thread: " + (i + 1));
+				fmts[i].start();
 			}
+			boolean threadAlive = true;
+			while(threadAlive) {
+				for(int i = 0; i < Config.fileManagerThreads; i++) {
+					if(!fmts[i].isAlive()) {
+						threadAlive = false;
+					}
+				}
+				Thread.sleep(4444);
+			}
+			FileManagerThread fmt = new FileManagerThread();
+			fmt.processFileRequests();
 		}
 		else {
 			System.out.println("Invalid Arguments.");

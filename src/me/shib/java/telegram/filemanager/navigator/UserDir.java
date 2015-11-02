@@ -1,7 +1,6 @@
 package me.shib.java.telegram.filemanager.navigator;
 
 import java.io.File;
-import java.util.Date;
 
 public class UserDir {
 	
@@ -18,29 +17,23 @@ public class UserDir {
 	
 	public KeyBoardAndResponseText getCurrentResponse() {
 		StringBuilder responseBuilder = new StringBuilder();
-		if(file == null) {
-			String[] list = dir.list();
-			responseBuilder.append("Please select one of the below items:");
-			for(int i = 0; i < list.length; i++) {
-				responseBuilder.append("\n" + list[i]);
-			}
-		}
-		else {
-			responseBuilder.append("File Info:\n");
-			responseBuilder.append("Name: " + file.getName() + "\n");
-			responseBuilder.append("Last Modified: " + new Date(file.lastModified()) + "\n");
-			responseBuilder.append("Full Path: \"" + file.getAbsolutePath() + "\"");
+		String[] list = dir.list();
+		responseBuilder.append("Please select one of the below items:");
+		for(int i = 0; i < list.length; i++) {
+			responseBuilder.append("\n" + list[i]);
 		}
 		KeyBoardAndResponseText kbart = new KeyBoardAndResponseText(dir.list(), responseBuilder.toString());
 		return kbart;
 	}
-	
+
 	public void navigate(String keyword) {
 		file = null;
 		if(keyword.equalsIgnoreCase("/back")) {
 			File parentDir = dir.getParentFile();
 			if(parentDir != null) {
-				dir = parentDir;
+				if(!homeDir.getParentFile().getAbsolutePath().equalsIgnoreCase(parentDir.getAbsolutePath())) {
+					dir = parentDir;
+				}
 			}
 		}
 		else if(keyword.equalsIgnoreCase("/home") || keyword.equalsIgnoreCase("/start")) {
@@ -57,6 +50,12 @@ public class UserDir {
 				}
 			}
 		}
+	}
+	
+	public File getFile() {
+		File returnableFile = file;
+		file = null;
+		return returnableFile;
 	}
 
 	public long getUserId() {
