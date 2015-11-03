@@ -2,42 +2,125 @@ package me.shib.java.telegram.filemanager.navigator;
 
 import java.io.File;
 
+import me.shib.java.telegram.filemanager.worker.Config;
+
 public class UserDir {
 	
 	private long userId;
 	private File dir;
 	private File file;
+	private int fromRange;
+	private int toRange;
+	private boolean showNextButton;
+	private boolean showPrevButton;
+	private ShowRange showRange;
 	
 	public static File homeDir;
+	
+	public static enum ShowRange {
+		DEFAULT, NEXT, PREVIOUS
+	}
 	
 	public UserDir(long userId) {
 		this.userId = userId;
 		this.dir = homeDir;
+		fromRange = 0;
+		toRange = 0;
+		showNextButton = false;
+		showPrevButton = false;
+		showRange = ShowRange.DEFAULT;
+	}
+
+	private String[] getListing() {
+		String[] list = dir.list();
+		if(list.length > Config.fileListMaxSize) {
+			if(showRange == ShowRange.NEXT) {
+				fromRange = fromRange + Config.fileListMaxSize;
+				if(fromRange > list.length) {
+					fromRange = 1;
+				}
+			}
+			else if(showRange == ShowRange.PREVIOUS) {
+				fromRange = fromRange - Config.fileListMaxSize;
+				if(fromRange < 1) {
+					fromRange = 1;
+				}
+			}
+			else if(fromRange < 1) {
+				fromRange = 1;
+			}
+			toRange = fromRange + Config.fileListMaxSize - 1;
+			if(toRange > list.length) {
+				toRange = list.length;
+			}
+			if(fromRange > 1) {
+				showPrevButton = true;
+			}
+			if(toRange < list.length) {
+				showNextButton = true;
+			}
+			String[] newList = new String[toRange - fromRange + 1];
+			for(int i = (fromRange -1), j = 0; i < toRange; i++, j++) {
+				newList[j] = list[i];
+			}
+			return newList;
+		}
+		return list;
 	}
 	
 	public KeyBoardAndResponseText getCurrentResponse() {
 		StringBuilder responseBuilder = new StringBuilder();
-		String[] list = dir.list();
-		responseBuilder.append("Please select one of the below items:");
+		String[] list = getListing();
+		if(list.length > 0) {
+			responseBuilder.append("Please select one of the below items:");
+		}
+		else {
+			responseBuilder.append("This directory is empty. Please preform one of the below actions:\n\n/home\n/back");
+		}
+		if((fromRange > 0) && (toRange > fromRange)) {
+			responseBuilder.append("\nShowing items: " + fromRange + " to " + toRange + " of " + dir.list().length + "\n");
+		}
 		for(int i = 0; i < list.length; i++) {
 			responseBuilder.append("\n" + list[i]);
 		}
-		KeyBoardAndResponseText kbart = new KeyBoardAndResponseText(dir.list(), responseBuilder.toString());
+		if(showPrevButton) {
+			responseBuilder.append("\n\nEnter \"/previous\" for previous set of items.");
+		}
+		if(showNextButton) {
+			if(!showPrevButton) {
+				responseBuilder.append("\n");
+			}
+			responseBuilder.append("\nEnter \"/next\" for more items.");
+		}
+		KeyBoardAndResponseText kbart = new KeyBoardAndResponseText(list, responseBuilder.toString());
 		return kbart;
 	}
 
 	public void navigate(String keyword) {
 		file = null;
+		showNextButton = false;
+		showPrevButton = false;
+		showRange = ShowRange.DEFAULT;
 		if(keyword.equalsIgnoreCase("/back")) {
-			File parentDir = dir.getParentFile();
-			if(parentDir != null) {
-				if(!homeDir.getParentFile().getAbsolutePath().equalsIgnoreCase(parentDir.getAbsolutePath())) {
+			fromRange = 0;
+			toRange = 0;
+			if(!homeDir.getAbsolutePath().equalsIgnoreCase(dir.getAbsolutePath())) {
+				File parentDir = dir.getParentFile();
+				if(parentDir != null) {
 					dir = parentDir;
 				}
 			}
 		}
 		else if(keyword.equalsIgnoreCase("/home") || keyword.equalsIgnoreCase("/start")) {
+			fromRange = 0;
+			toRange = 0;
 			dir = homeDir;
+		}
+		else if(keyword.equalsIgnoreCase("/next")) {
+			showRange = ShowRange.NEXT;
+		}
+		else if(keyword.equalsIgnoreCase("/previous")) {
+			showRange = ShowRange.PREVIOUS;
 		}
 		else {
 			File newFileOrDir = new File(dir.getPath() + File.separator + keyword);
@@ -60,6 +143,14 @@ public class UserDir {
 
 	public long getUserId() {
 		return userId;
+	}
+
+	public boolean isShowNextButton() {
+		return showNextButton;
+	}
+
+	public boolean isShowPrevButton() {
+		return showPrevButton;
 	}
 	
 }

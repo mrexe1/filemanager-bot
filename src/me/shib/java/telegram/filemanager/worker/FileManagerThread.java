@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Date;
 
 import com.nudanam.java.telegram.bot.service.TelegramBotService;
+import com.nudanam.java.telegram.bot.service.TelegramBotService.ChatAction;
 import com.nudanam.java.telegram.bot.types.Message;
 import com.nudanam.java.telegram.bot.types.ReplyKeyboardMarkup;
 import com.nudanam.java.telegram.bot.types.Update;
@@ -51,21 +52,45 @@ public class FileManagerThread extends Thread {
 					ud.navigate(upd.getMessage().getText());
 					KeyBoardAndResponseText kbt = ud.getCurrentResponse();
 					String[] fileNameList = kbt.getFileList();
-					String[][] keyboard = new String[fileNameList.length][1];
+					String[] navigationButtons = null;
+					if(ud.isShowNextButton() && ud.isShowPrevButton()) {
+						navigationButtons = new String[4];
+						navigationButtons[2] = "/previous";
+						navigationButtons[3] = "/next";
+					}
+					else if(ud.isShowNextButton() || ud.isShowPrevButton()) {
+						navigationButtons = new String[3];
+						if(ud.isShowPrevButton()) {
+							navigationButtons[2] = "/previous";
+						}
+						else {
+							navigationButtons[2] = "/next";
+						}
+					}
+					else {
+						navigationButtons = new String[2];
+					}
+					navigationButtons[0] = "/home";
+					navigationButtons[1] = "/back";
+					String[][] keyboard = new String[fileNameList.length + 1][1];
+					keyboard[0] = navigationButtons;
 					for(int i = 0; i < fileNameList.length; i++) {
-						keyboard[i][0] = fileNameList[i];
+						keyboard[i + 1][0] = fileNameList[i];
 					}
 					File fileToSend = ud.getFile();
 					if(fileToSend != null) {
-						Message sentMessage;
+						int sentMessageId = 0;
+						Message sentMessage = tbs.sendMessage(ud.getUserId(), "File Info:\n" + getFileInfo(fileToSend), null, true);
+						if(sentMessage != null) {
+							sentMessageId = sentMessage.getMessage_id();
+						}
 						if(fileToSend.length() > Config.maxFileSize) {
-							sentMessage = tbs.sendMessage(ud.getUserId(), "The file size you have requested is larger than the permissible limit.");
+							tbs.sendMessage(ud.getUserId(), "The file you requested is larger in size than the permissible limit.", null, true, sentMessageId);
 						}
 						else {
-							sentMessage = tbs.sendDocument(ud.getUserId(), fileToSend);
-						}
-						if(sentMessage != null) {
-							tbs.sendMessage(ud.getUserId(), "File Info:\n" + getFileInfo(fileToSend), null, true, sentMessage.getMessage_id());
+							tbs.sendMessage(ud.getUserId(), "Please wait while the file is being sent..." + getFileInfo(fileToSend), null, true, sentMessageId);
+							tbs.sendChatAction(ud.getUserId(), ChatAction.upload_document);
+							tbs.sendDocument(ud.getUserId(), fileToSend, sentMessageId);
 						}
 					}
 					tbs.sendMessage(ud.getUserId(), kbt.getResponse(), null, true, 0, new ReplyKeyboardMarkup(keyboard, true, true));
