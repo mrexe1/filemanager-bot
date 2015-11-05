@@ -15,10 +15,12 @@ import me.shib.java.telegram.filemanager.navigator.UserDir;
 
 public class FileManagerThread extends Thread {
 	
+	private static final long maxFileSize = 50000000;
+	
 	private TelegramBotService tbs;
 	
 	public FileManagerThread() {
-		tbs = new TelegramBotService(Config.botApiToken);
+		tbs = new TelegramBotService(ConfigManager.config().botApiToken());
 	}
 	
 	private String getFileInfo(File file) {
@@ -84,7 +86,7 @@ public class FileManagerThread extends Thread {
 						if(sentMessage != null) {
 							sentMessageId = sentMessage.getMessage_id();
 						}
-						if(fileToSend.length() > Config.maxFileSize) {
+						if(fileToSend.length() > maxFileSize) {
 							tbs.sendMessage(ud.getUserId(), "The file you requested is larger in size than the permissible limit.", null, true, sentMessageId);
 						}
 						else {

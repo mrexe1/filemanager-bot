@@ -2,12 +2,30 @@ package me.shib.java.telegram.filemanager.worker;
 
 public class Config {
 	
-	public static final String botApiToken = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+	private String botApiToken;
+	private String homeDirPath;
+	private int fileManagerThreads;
+	private int fileListMaxLengthPerView;
 	
-	public static final int fileManagerThreads = 7;
-	
-	public static long maxFileSize = 50000000;
-	
-	public static int fileListMaxSize = 20;
-	
+	protected Config() {
+		homeDirPath = System.getProperty("user.dir");
+		fileManagerThreads = 7;
+		fileListMaxLengthPerView = 20;
+	}
+
+	public String botApiToken() {
+		return botApiToken;
+	}
+
+	public String homeDirPath() {
+		return homeDirPath;
+	}
+
+	public int fileManagerThreads() {
+		return fileManagerThreads;
+	}
+
+	public int fileListMaxLengthPerView() {
+		return fileListMaxLengthPerView;
+	}
 }

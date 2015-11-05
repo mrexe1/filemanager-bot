@@ -9,7 +9,7 @@ import com.nudanam.java.telegram.bot.types.Update;
 
 public class MessageListener {
 	
-private static final String botApiToken = Config.botApiToken;
+private static final String botApiToken = ConfigManager.config().botApiToken();
 	
 	private static Queue<Update> updatesQueue = new LinkedList<Update>();
 	private static TelegramBotService updateReceiver = new TelegramBotService(botApiToken);

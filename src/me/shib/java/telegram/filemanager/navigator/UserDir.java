@@ -2,7 +2,7 @@ package me.shib.java.telegram.filemanager.navigator;
 
 import java.io.File;
 
-import me.shib.java.telegram.filemanager.worker.Config;
+import me.shib.java.telegram.filemanager.worker.ConfigManager;
 
 public class UserDir {
 	
@@ -15,7 +15,7 @@ public class UserDir {
 	private boolean showPrevButton;
 	private ShowRange showRange;
 	
-	public static File homeDir;
+	private static File homeDir = new File(ConfigManager.config().homeDirPath());
 	
 	public static enum ShowRange {
 		DEFAULT, NEXT, PREVIOUS
@@ -33,15 +33,15 @@ public class UserDir {
 
 	private String[] getListing() {
 		String[] list = dir.list();
-		if(list.length > Config.fileListMaxSize) {
+		if(list.length > ConfigManager.config().fileListMaxLengthPerView()) {
 			if(showRange == ShowRange.NEXT) {
-				fromRange = fromRange + Config.fileListMaxSize;
+				fromRange = fromRange + ConfigManager.config().fileListMaxLengthPerView();
 				if(fromRange > list.length) {
 					fromRange = 1;
 				}
 			}
 			else if(showRange == ShowRange.PREVIOUS) {
-				fromRange = fromRange - Config.fileListMaxSize;
+				fromRange = fromRange - ConfigManager.config().fileListMaxLengthPerView();
 				if(fromRange < 1) {
 					fromRange = 1;
 				}
@@ -49,7 +49,7 @@ public class UserDir {
 			else if(fromRange < 1) {
 				fromRange = 1;
 			}
-			toRange = fromRange + Config.fileListMaxSize - 1;
+			toRange = fromRange + ConfigManager.config().fileListMaxLengthPerView() - 1;
 			if(toRange > list.length) {
 				toRange = list.length;
 			}
