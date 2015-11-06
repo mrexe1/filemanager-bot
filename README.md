@@ -1,8 +1,9 @@
 # FileManagerBot
 A Telegram Bot to receive files from any computer it is deployed.
 
-### Download ###
-* Download here - [FileManagerBot Executable](https://bitbucket.org/shiblymeeran/filemanagerbot/downloads/FileManagerBot.zip)
+### Downloads ###
+* [FileManagerBot - Runnable JAR](https://bitbucket.org/shiblymeeran/filemanagerbot/downloads/FileManagerBot.jar)
+* [FileManagerBot - Configuration](https://bitbucket.org/shiblymeeran/filemanagerbot/downloads/FileManagerBotConfig.json)
 
 ### Dependencies ###
 * [TelegramBotJavaLibrary](https://github.com/shiblymeeran/TelegramBotJavaLibrary)
