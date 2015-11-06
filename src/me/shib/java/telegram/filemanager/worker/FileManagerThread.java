@@ -23,21 +23,18 @@ public class FileManagerThread extends Thread {
 		tbs = new TelegramBotService(ConfigManager.config().botApiToken());
 	}
 	
+	private static String humanReadableByteCount(long bytes, boolean si) {
+	    int unit = si ? 1000 : 1024;
+	    if (bytes < unit) return bytes + " B";
+	    int exp = (int) (Math.log(bytes) / Math.log(unit));
+	    String pre = (si ? "kMGTPE" : "KMGTPE").charAt(exp-1) + (si ? "" : "i");
+	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
+	}
+	
 	private String getFileInfo(File file) {
 		StringBuilder fileInfoBuilder = new StringBuilder();
 		fileInfoBuilder.append("Name: " + file.getName() + "\n");
-		long totalSize = file.length();
-		String size = "0";
-		if(totalSize < 1024) {
-			size = totalSize + "Bytes";
-		}
-		else if(totalSize < 1048576) {
-			size = (int)(totalSize / 1024) + "kB";
-		}
-		else {
-			size = (int)(totalSize / 1048576) + "MB";
-		}
-		fileInfoBuilder.append("Size: " + size + "\n");
+		fileInfoBuilder.append("Size: " + humanReadableByteCount(file.length(), false) + "\n");
 		fileInfoBuilder.append("Last Modified: " + new Date(file.lastModified()));
 		return fileInfoBuilder.toString();
 	}
