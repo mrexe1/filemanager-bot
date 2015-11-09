@@ -57,7 +57,7 @@ public class FileManagerThread extends Thread {
 					tbs.sendMessage(upd.getMessage().getChat().getId(), "Please input a text");
 				}
 				else {
-					UserDir ud = UserBase.getUserDir(upd.getMessage().getChat().getUser().getId());
+					UserDir ud = UserBase.getUserDir(upd.getMessage().getChat().getId());
 					ud.navigate(upd.getMessage().getText());
 					KeyBoardAndResponseText kbt = ud.getCurrentResponse();
 					String[] fileNameList = kbt.getFileList();
