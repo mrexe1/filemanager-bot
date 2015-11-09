@@ -18,6 +18,7 @@ public class FileManagerThread extends Thread {
 	private static final long maxFileSize = 50000000;
 	
 	private TelegramBotService tbs;
+	private ChatActionThread cat;
 	
 	public FileManagerThread() {
 		tbs = new TelegramBotService(ConfigManager.config().botApiToken());
@@ -37,6 +38,15 @@ public class FileManagerThread extends Thread {
 		fileInfoBuilder.append("Size: " + humanReadableByteCount(file.length(), false) + "\n");
 		fileInfoBuilder.append("Last Modified: " + new Date(file.lastModified()));
 		return fileInfoBuilder.toString();
+	}
+	
+	private void startChatAction(long chatId, ChatAction chatAction) {
+		cat = new ChatActionThread(tbs, chatId, chatAction);
+		cat.start();
+	}
+	
+	private void endChatAction() {
+		cat.endAction();
 	}
 	
 	protected void processFileRequests() {
@@ -77,6 +87,7 @@ public class FileManagerThread extends Thread {
 						keyboard[i + 1][0] = fileNameList[i];
 					}
 					File fileToSend = ud.getFile();
+					String consumableSuggestionMessage = ud.getConsumableSearchSuggestion();
 					if(fileToSend != null) {
 						int sentMessageId = 0;
 						Message sentMessage = tbs.sendMessage(ud.getUserId(), "File Info:\n" + getFileInfo(fileToSend), null, true);
@@ -88,11 +99,17 @@ public class FileManagerThread extends Thread {
 						}
 						else {
 							tbs.sendMessage(ud.getUserId(), "Please wait while the file is being sent..." + getFileInfo(fileToSend), null, true, sentMessageId);
-							tbs.sendChatAction(ud.getUserId(), ChatAction.upload_document);
+							startChatAction(ud.getUserId(), ChatAction.upload_document);
 							tbs.sendDocument(ud.getUserId(), fileToSend, sentMessageId);
+							endChatAction();
 						}
 					}
-					tbs.sendMessage(ud.getUserId(), kbt.getResponse(), null, true, 0, new ReplyKeyboardMarkup(keyboard, true, true));
+					if(consumableSuggestionMessage != null) {
+						tbs.sendMessage(ud.getUserId(), consumableSuggestionMessage, null, true);
+					}
+					else {
+						tbs.sendMessage(ud.getUserId(), kbt.getResponse(), null, true, 0, new ReplyKeyboardMarkup(keyboard, true, true));
+					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();

@@ -1,6 +1,7 @@
 package me.shib.java.telegram.filemanager.navigator;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import me.shib.java.telegram.filemanager.worker.ConfigManager;
 
@@ -14,6 +15,7 @@ public class UserDir {
 	private boolean showNextButton;
 	private boolean showPrevButton;
 	private ShowRange showRange;
+	private String consumableSearchSuggestion;
 	
 	private static File homeDir = new File(ConfigManager.config().homeDirPath());
 	
@@ -29,6 +31,7 @@ public class UserDir {
 		showNextButton = false;
 		showPrevButton = false;
 		showRange = ShowRange.DEFAULT;
+		consumableSearchSuggestion = null;
 	}
 
 	private String[] getListing() {
@@ -77,7 +80,7 @@ public class UserDir {
 		else {
 			responseBuilder.append("This directory is empty. Please preform one of the below actions:\n\n/home\n/back");
 		}
-		if((fromRange > 0) && (toRange > fromRange)) {
+		if((fromRange > 0) && (toRange >= fromRange) && (dir.list().length > list.length)) {
 			responseBuilder.append("\nShowing items: " + fromRange + " to " + toRange + " of " + dir.list().length + "\n");
 		}
 		for(int i = 0; i < list.length; i++) {
@@ -95,7 +98,42 @@ public class UserDir {
 		KeyBoardAndResponseText kbart = new KeyBoardAndResponseText(list, responseBuilder.toString());
 		return kbart;
 	}
-
+	
+	private boolean isMatching(String str1, String str2) {
+		String[] list1 = str1.split("\\s+");
+		String[] list2 = str2.split("\\s+");
+		for(int i = 0; i < list1.length; i++) {
+			for(int j = 0; j < list2.length; j++) {
+				if(list1[i].equalsIgnoreCase(list2[j])) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private String getMatchedItems(String searchTerm) {
+		ArrayList<String> matchedItemList = new ArrayList<String>();
+		if(dir.exists() && dir.isDirectory()) {
+			File fileList[] = dir.listFiles();
+			for(int i = 0; i < fileList.length; i++) {
+				if(isMatching(searchTerm, fileList[i].getName())) {
+					matchedItemList.add("/" + (i + 1) + " - " + fileList[i].getName());
+				}
+			}
+			if(matchedItemList.size() > 0) {
+				StringBuilder searchSuggestionMessage = new StringBuilder();
+				searchSuggestionMessage.append("See if you could find the item u wish in the following list:\n");
+				for(int i = 0; i < matchedItemList.size(); i++) {
+					searchSuggestionMessage.append(matchedItemList.get(i) + "\n");
+				}
+				searchSuggestionMessage.append("Please enter the exact name or the number with \"/\" symbol for the name if u see it.");
+				return searchSuggestionMessage.toString();
+			}
+		}
+		return null;
+	}
+	
 	public void navigate(String keyword) {
 		file = null;
 		showNextButton = false;
@@ -122,6 +160,25 @@ public class UserDir {
 		else if(keyword.equalsIgnoreCase("/previous")) {
 			showRange = ShowRange.PREVIOUS;
 		}
+		else if(keyword.startsWith("/")) {
+			int num;
+			try {
+				num = Integer.parseInt(keyword.replace("/", ""));
+			} catch (Exception e) {
+				num = 0;
+			}
+			if((num > 0) && (num <= dir.list().length)) {
+				File newFileOrDir = new File(dir.getPath() + File.separator + dir.list()[num - 1]);
+				if(newFileOrDir.exists()) {
+					if(newFileOrDir.isDirectory()) {
+						dir = newFileOrDir;
+					}
+					else {
+						file = newFileOrDir;
+					}
+				}
+			}
+		}
 		else {
 			File newFileOrDir = new File(dir.getPath() + File.separator + keyword);
 			if(newFileOrDir.exists()) {
@@ -131,6 +188,9 @@ public class UserDir {
 				else {
 					file = newFileOrDir;
 				}
+			}
+			else {
+				consumableSearchSuggestion = getMatchedItems(keyword);
 			}
 		}
 	}
@@ -151,6 +211,12 @@ public class UserDir {
 
 	public boolean isShowPrevButton() {
 		return showPrevButton;
+	}
+
+	public String getConsumableSearchSuggestion() {
+		String toReturn = consumableSearchSuggestion;
+		consumableSearchSuggestion = null;
+		return toReturn;
 	}
 	
 }
