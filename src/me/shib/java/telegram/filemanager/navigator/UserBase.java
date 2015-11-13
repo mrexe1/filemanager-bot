@@ -1,8 +1,6 @@
-package me.shib.java.telegram.filemanager.worker;
+package me.shib.java.telegram.filemanager.navigator;
 
 import java.util.ArrayList;
-
-import me.shib.java.telegram.filemanager.navigator.UserDir;
 
 public class UserBase {
 	

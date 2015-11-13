@@ -3,7 +3,7 @@ package me.shib.java.telegram.filemanager.navigator;
 import java.io.File;
 import java.util.ArrayList;
 
-import me.shib.java.telegram.filemanager.worker.ConfigManager;
+import me.shib.java.telegram.filemanager.main.FileManagerBotConfig;
 
 public class UserDir {
 	
@@ -17,7 +17,7 @@ public class UserDir {
 	private ShowRange showRange;
 	private String consumableSearchSuggestion;
 	
-	private static File homeDir = new File(ConfigManager.config().homeDirPath());
+	private static File homeDir = new File(FileManagerBotConfig.getInstanceFromFile().homeDirPath());
 	
 	public static enum ShowRange {
 		DEFAULT, NEXT, PREVIOUS
@@ -36,15 +36,15 @@ public class UserDir {
 
 	private String[] getListing() {
 		String[] list = dir.list();
-		if(list.length > ConfigManager.config().fileListMaxLengthPerView()) {
+		if(list.length > FileManagerBotConfig.getInstanceFromFile().fileListMaxLengthPerView()) {
 			if(showRange == ShowRange.NEXT) {
-				fromRange = fromRange + ConfigManager.config().fileListMaxLengthPerView();
+				fromRange = fromRange + FileManagerBotConfig.getInstanceFromFile().fileListMaxLengthPerView();
 				if(fromRange > list.length) {
 					fromRange = 1;
 				}
 			}
 			else if(showRange == ShowRange.PREVIOUS) {
-				fromRange = fromRange - ConfigManager.config().fileListMaxLengthPerView();
+				fromRange = fromRange - FileManagerBotConfig.getInstanceFromFile().fileListMaxLengthPerView();
 				if(fromRange < 1) {
 					fromRange = 1;
 				}
@@ -52,7 +52,7 @@ public class UserDir {
 			else if(fromRange < 1) {
 				fromRange = 1;
 			}
-			toRange = fromRange + ConfigManager.config().fileListMaxLengthPerView() - 1;
+			toRange = fromRange + FileManagerBotConfig.getInstanceFromFile().fileListMaxLengthPerView() - 1;
 			if(toRange > list.length) {
 				toRange = list.length;
 			}

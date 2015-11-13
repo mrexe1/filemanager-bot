@@ -1,5 +1,4 @@
 {
-  "botApiToken": "YourBotApiTokenGoesHere",
   "homeDirPath": "D:\\",
   "fileManagerThreads": 7,
   "fileListMaxLengthPerView": 20
