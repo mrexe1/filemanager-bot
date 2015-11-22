@@ -1,9 +1,9 @@
-package me.shib.java.telegram.filemanager.navigator;
+package me.shib.java.app.telegram.bot.filemanager.navigator;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import me.shib.java.telegram.filemanager.main.FileManagerBotConfig;
+import me.shib.java.lib.telegram.bot.easybot.TBotConfig;
 
 public class UserDir {
 	
@@ -16,16 +16,27 @@ public class UserDir {
 	private boolean showPrevButton;
 	private ShowRange showRange;
 	private String consumableSearchSuggestion;
+	private int maxEntriesPerView;
 	
-	private static File homeDir = new File(FileManagerBotConfig.getInstanceFromFile().homeDirPath());
+	private static File homeDir = null;
 	
 	public static enum ShowRange {
 		DEFAULT, NEXT, PREVIOUS
 	}
 	
-	public UserDir(long userId) {
+	private static TBotConfig fileManagerConfig;
+	
+	public UserDir(long userId, TBotConfig fileManagerConfig) {
+		if(UserDir.fileManagerConfig == null) {
+			UserDir.fileManagerConfig = fileManagerConfig;
+		}
+		try {
+			maxEntriesPerView = Integer.parseInt(UserDir.fileManagerConfig.getValueForKey("maxEntriesPerView"));
+		} catch (Exception e) {
+			maxEntriesPerView = 20;
+		}
 		this.userId = userId;
-		this.dir = homeDir;
+		this.dir = getHomeDir(fileManagerConfig);
 		fromRange = 0;
 		toRange = 0;
 		showNextButton = false;
@@ -33,18 +44,29 @@ public class UserDir {
 		showRange = ShowRange.DEFAULT;
 		consumableSearchSuggestion = null;
 	}
-
+	
+	private static File getHomeDir(TBotConfig fileManagerConfig) {
+		if(homeDir == null) {
+			String homeDirPath = fileManagerConfig.getValueForKey("homeDirPath");
+			if((homeDirPath == null) || homeDirPath.isEmpty()) {
+				homeDirPath = System.getProperty("user.dir");
+			}
+			homeDir = new File(homeDirPath);
+		}
+		return homeDir;
+	}
+	
 	private String[] getListing() {
 		String[] list = dir.list();
-		if(list.length > FileManagerBotConfig.getInstanceFromFile().fileListMaxLengthPerView()) {
+		if(list.length > maxEntriesPerView) {
 			if(showRange == ShowRange.NEXT) {
-				fromRange = fromRange + FileManagerBotConfig.getInstanceFromFile().fileListMaxLengthPerView();
+				fromRange = fromRange + maxEntriesPerView;
 				if(fromRange > list.length) {
 					fromRange = 1;
 				}
 			}
 			else if(showRange == ShowRange.PREVIOUS) {
-				fromRange = fromRange - FileManagerBotConfig.getInstanceFromFile().fileListMaxLengthPerView();
+				fromRange = fromRange - maxEntriesPerView;
 				if(fromRange < 1) {
 					fromRange = 1;
 				}
@@ -52,7 +74,7 @@ public class UserDir {
 			else if(fromRange < 1) {
 				fromRange = 1;
 			}
-			toRange = fromRange + FileManagerBotConfig.getInstanceFromFile().fileListMaxLengthPerView() - 1;
+			toRange = fromRange + maxEntriesPerView - 1;
 			if(toRange > list.length) {
 				toRange = list.length;
 			}
@@ -142,7 +164,7 @@ public class UserDir {
 		if(keyword.equalsIgnoreCase("/back")) {
 			fromRange = 0;
 			toRange = 0;
-			if(!homeDir.getAbsolutePath().equalsIgnoreCase(dir.getAbsolutePath())) {
+			if(!getHomeDir(fileManagerConfig).getAbsolutePath().equalsIgnoreCase(dir.getAbsolutePath())) {
 				File parentDir = dir.getParentFile();
 				if(parentDir != null) {
 					dir = parentDir;
@@ -152,7 +174,7 @@ public class UserDir {
 		else if(keyword.equalsIgnoreCase("/home") || keyword.equalsIgnoreCase("/start")) {
 			fromRange = 0;
 			toRange = 0;
-			dir = homeDir;
+			dir = getHomeDir(fileManagerConfig);
 		}
 		else if(keyword.equalsIgnoreCase("/next")) {
 			showRange = ShowRange.NEXT;

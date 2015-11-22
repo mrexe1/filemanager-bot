@@ -1,23 +1,31 @@
-package me.shib.java.telegram.filemanager.main;
+package me.shib.java.app.telegram.bot.filemanager.main;
 
 import java.io.File;
 import java.util.Date;
 
-import me.shib.java.telegram.bot.service.TelegramBotService;
-import me.shib.java.telegram.bot.service.TelegramBotService.ChatAction;
-import me.shib.java.telegram.bot.types.ChatId;
-import me.shib.java.telegram.bot.types.Message;
-import me.shib.java.telegram.bot.types.ReplyKeyboardMarkup;
-import me.shib.java.telegram.bot.types.TelegramFile;
-import me.shib.java.telegram.bot.worker.TBotModel;
-import me.shib.java.telegram.filemanager.navigator.KeyBoardAndResponseText;
-import me.shib.java.telegram.filemanager.navigator.UserBase;
-import me.shib.java.telegram.filemanager.navigator.UserDir;
+import me.shib.java.app.telegram.bot.filemanager.navigator.KeyBoardAndResponseText;
+import me.shib.java.app.telegram.bot.filemanager.navigator.UserBase;
+import me.shib.java.app.telegram.bot.filemanager.navigator.UserDir;
+import me.shib.java.lib.telegram.bot.easybot.TBotConfig;
+import me.shib.java.lib.telegram.bot.easybot.TBotModel;
+import me.shib.java.lib.telegram.bot.service.TelegramBotService;
+import me.shib.java.lib.telegram.bot.service.TelegramBotService.ChatAction;
+import me.shib.java.lib.telegram.bot.types.ChatId;
+import me.shib.java.lib.telegram.bot.types.Message;
+import me.shib.java.lib.telegram.bot.types.ReplyKeyboardMarkup;
+import me.shib.java.lib.telegram.bot.types.TelegramFile;
 
 public class FileManagerBotModel implements TBotModel {
 	
 	private static final long maxFileSize = 50000000;
 	private ChatActionHandler cah;
+	private static TBotConfig fileManagerConfig = null;
+	
+	public FileManagerBotModel(TBotConfig fileManagerConfig) {
+		if(FileManagerBotModel.fileManagerConfig == null) {
+			FileManagerBotModel.fileManagerConfig = fileManagerConfig;
+		}
+	}
 	
 	private static String humanReadableByteCount(long bytes, boolean si) {
 	    int unit = si ? 1000 : 1024;
@@ -44,7 +52,6 @@ public class FileManagerBotModel implements TBotModel {
 		cah.endAction();
 	}
 
-	@Override
 	public Message onReceivingMessage(TelegramBotService tBotService, Message message) {
 		Message returnMessage = null;
 		try {
@@ -52,7 +59,7 @@ public class FileManagerBotModel implements TBotModel {
 				tBotService.sendMessage(new ChatId(message.getChat().getId()), "Please input a text");
 			}
 			else {
-				UserDir ud = UserBase.getUserDir(message.getChat().getId());
+				UserDir ud = UserBase.getUserDir(message.getChat().getId(), fileManagerConfig);
 				ud.navigate(message.getText());
 				KeyBoardAndResponseText kbt = ud.getCurrentResponse();
 				String[] fileNameList = kbt.getFileList();
@@ -112,15 +119,15 @@ public class FileManagerBotModel implements TBotModel {
 		return returnMessage;
 	}
 
-	@Override
 	public Message onMessageFromAdmin(TelegramBotService tBotService, Message message) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
-	public Message customSupportHandler(TelegramBotService tBotService, Message message) {
-		// TODO Auto-generated method stub
+	public String getStatusMessage() {
+		return null;
+	}
+
+	public Message onCommand(TelegramBotService arg0, Message arg1) {
 		return null;
 	}
 

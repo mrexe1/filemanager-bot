@@ -1,4 +1,4 @@
-package me.shib.java.telegram.filemanager.navigator;
+package me.shib.java.app.telegram.bot.filemanager.navigator;
 
 public class KeyBoardAndResponseText {
 	

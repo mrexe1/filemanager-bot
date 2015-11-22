@@ -1,5 +1,10 @@
 {
-  "homeDirPath": "D:\\",
-  "fileManagerThreads": 7,
-  "fileListMaxLengthPerView": 20
+	"botApiToken": "YourBotApiTokenGoesHere",
+	"commandList": ["/start","/status","/scr"],
+	"adminIdList": [00000000, 00000000],
+	"reportIntervalInSeconds": 604800,
+	"constants": {
+		"homeDirPath": "D:\\",
+		"maxEntriesPerView": "20"
+	}
 }

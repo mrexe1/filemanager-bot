@@ -1,8 +1,8 @@
-package me.shib.java.telegram.filemanager.main;
+package me.shib.java.app.telegram.bot.filemanager.main;
 
-import me.shib.java.telegram.bot.service.TelegramBotService;
-import me.shib.java.telegram.bot.service.TelegramBotService.ChatAction;
-import me.shib.java.telegram.bot.types.ChatId;
+import me.shib.java.lib.telegram.bot.service.TelegramBotService;
+import me.shib.java.lib.telegram.bot.service.TelegramBotService.ChatAction;
+import me.shib.java.lib.telegram.bot.types.ChatId;
 
 public class ChatActionHandler extends Thread {
 	

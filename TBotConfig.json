@@ -1,9 +1,0 @@
-{
-  "botApiToken": "YourBotApiTokenGoesHere",
-  "adminIdList": [1,2,3,4],
-  "supportMessageFilter": true,
-  "reportStatus": true,
-  "statusReportInterval": 3600,
-  "supportCommand": "/support",
-  "statusReportCommand": "/status"
-}
