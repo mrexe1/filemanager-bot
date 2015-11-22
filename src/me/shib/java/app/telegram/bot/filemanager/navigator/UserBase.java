@@ -14,7 +14,7 @@ public class UserBase {
 				return userDirList.get(i);
 			}
 		}
-		UserDir newUserDir = new UserDir(userId, fileManagerConfig);
+		UserDir newUserDir = new UserDir(userId);
 		userDirList.add(newUserDir);
 		return newUserDir;
 	}

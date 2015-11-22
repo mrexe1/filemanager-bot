@@ -17,15 +17,10 @@ import me.shib.java.lib.telegram.bot.types.TelegramFile;
 
 public class FileManagerBotModel implements TBotModel {
 	
+	public static final TBotConfig fileManagerConfig = TBotConfig.getFileConfig(new File("FileManagerBotConfig.json"));
+	
 	private static final long maxFileSize = 50000000;
 	private ChatActionHandler cah;
-	private static TBotConfig fileManagerConfig = null;
-	
-	public FileManagerBotModel(TBotConfig fileManagerConfig) {
-		if(FileManagerBotModel.fileManagerConfig == null) {
-			FileManagerBotModel.fileManagerConfig = fileManagerConfig;
-		}
-	}
 	
 	private static String humanReadableByteCount(long bytes, boolean si) {
 	    int unit = si ? 1000 : 1024;

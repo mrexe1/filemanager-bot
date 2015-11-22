@@ -3,6 +3,7 @@ package me.shib.java.app.telegram.bot.filemanager.navigator;
 import java.io.File;
 import java.util.ArrayList;
 
+import me.shib.java.app.telegram.bot.filemanager.main.FileManagerBotModel;
 import me.shib.java.lib.telegram.bot.easybot.TBotConfig;
 
 public class UserDir {
@@ -20,23 +21,18 @@ public class UserDir {
 	
 	private static File homeDir = null;
 	
-	public static enum ShowRange {
+	public enum ShowRange {
 		DEFAULT, NEXT, PREVIOUS
 	}
 	
-	private static TBotConfig fileManagerConfig;
-	
-	public UserDir(long userId, TBotConfig fileManagerConfig) {
-		if(UserDir.fileManagerConfig == null) {
-			UserDir.fileManagerConfig = fileManagerConfig;
-		}
+	public UserDir(long userId) {
 		try {
-			maxEntriesPerView = Integer.parseInt(UserDir.fileManagerConfig.getValueForKey("maxEntriesPerView"));
+			maxEntriesPerView = Integer.parseInt(FileManagerBotModel.fileManagerConfig.getValueForKey("maxEntriesPerView"));
 		} catch (Exception e) {
 			maxEntriesPerView = 20;
 		}
 		this.userId = userId;
-		this.dir = getHomeDir(fileManagerConfig);
+		this.dir = getHomeDir(FileManagerBotModel.fileManagerConfig);
 		fromRange = 0;
 		toRange = 0;
 		showNextButton = false;
@@ -164,7 +160,7 @@ public class UserDir {
 		if(keyword.equalsIgnoreCase("/back")) {
 			fromRange = 0;
 			toRange = 0;
-			if(!getHomeDir(fileManagerConfig).getAbsolutePath().equalsIgnoreCase(dir.getAbsolutePath())) {
+			if(!getHomeDir(FileManagerBotModel.fileManagerConfig).getAbsolutePath().equalsIgnoreCase(dir.getAbsolutePath())) {
 				File parentDir = dir.getParentFile();
 				if(parentDir != null) {
 					dir = parentDir;
@@ -174,7 +170,7 @@ public class UserDir {
 		else if(keyword.equalsIgnoreCase("/home") || keyword.equalsIgnoreCase("/start")) {
 			fromRange = 0;
 			toRange = 0;
-			dir = getHomeDir(fileManagerConfig);
+			dir = getHomeDir(FileManagerBotModel.fileManagerConfig);
 		}
 		else if(keyword.equalsIgnoreCase("/next")) {
 			showRange = ShowRange.NEXT;

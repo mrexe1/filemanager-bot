@@ -1,8 +1,5 @@
 package me.shib.java.app.telegram.bot.filemanager.main;
 
-import java.io.File;
-
-import me.shib.java.lib.telegram.bot.easybot.TBotConfig;
 import me.shib.java.lib.telegram.bot.easybot.TBotWorker;
 
 public class StartFileManager {
@@ -11,9 +8,8 @@ public class StartFileManager {
 	
 	public static void main(String[] args) throws InterruptedException {
 		TBotWorker[] botWorkers = new TBotWorker[threadCount];
-		TBotConfig fileManagerConfig = TBotConfig.getFileConfig(new File("FileManagerBotConfig.json"));
 		for(int i = 0; i < threadCount; i++) {
-			botWorkers[i] = new TBotWorker(new FileManagerBotModel(fileManagerConfig), fileManagerConfig);
+			botWorkers[i] = new TBotWorker(new FileManagerBotModel(), FileManagerBotModel.fileManagerConfig);
 			botWorkers[i].start();
 		}
 		boolean threadAlive = true;
