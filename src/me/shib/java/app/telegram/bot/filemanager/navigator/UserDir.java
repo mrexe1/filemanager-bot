@@ -20,12 +20,20 @@ public class UserDir {
 	private int maxEntriesPerView;
 	
 	private static File homeDir = null;
+	private static String[] fileExtensionsToShow = null;
+	private static boolean sendDir = false;
 	
 	public enum ShowRange {
 		DEFAULT, NEXT, PREVIOUS
 	}
 	
 	public UserDir(long userId) {
+		if(!sendDir) {
+			String sendDirString = FileManagerBotModel.fileManagerConfig.getValueForKey("sendDir");
+			if((sendDirString != null) && (sendDirString.equalsIgnoreCase("true"))) {
+				sendDir = true;
+			}
+		}
 		try {
 			maxEntriesPerView = Integer.parseInt(FileManagerBotModel.fileManagerConfig.getValueForKey("maxEntriesPerView"));
 		} catch (Exception e) {
@@ -41,19 +49,67 @@ public class UserDir {
 		consumableSearchSuggestion = null;
 	}
 	
-	private static File getHomeDir(TBotConfig fileManagerConfig) {
+	public static File getHomeDir(TBotConfig fileManagerConfig) {
 		if(homeDir == null) {
 			String homeDirPath = fileManagerConfig.getValueForKey("homeDirPath");
-			if((homeDirPath == null) || homeDirPath.isEmpty()) {
-				homeDirPath = System.getProperty("user.dir");
+			if((homeDirPath != null) && (!homeDirPath.isEmpty())) {
+				homeDir = new File(homeDirPath);
+				if(!homeDir.exists()) {
+					homeDirPath = System.getProperty("user.dir");
+					homeDir = new File(homeDirPath);
+				}
 			}
-			homeDir = new File(homeDirPath);
 		}
 		return homeDir;
 	}
 	
-	private String[] getListing() {
-		String[] list = dir.list();
+	private static String[] getFileExtensionsToShow() {
+		if(fileExtensionsToShow == null) {
+			String fileExtensionListToShow = FileManagerBotModel.fileManagerConfig.getValueForKey("fileExtensionsToShow");
+			if(fileExtensionListToShow == null) {
+				return null;
+			}
+			fileExtensionsToShow = fileExtensionListToShow.split(",");
+		}
+		return fileExtensionsToShow;
+	}
+	
+	private static boolean isSupportedFormat(File validationFile) {
+		String[] extensions = getFileExtensionsToShow();
+		for(String ext : extensions) {
+			if(validationFile.getName().toLowerCase().endsWith(ext.toLowerCase())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private String[] getFileNamesForFileList(File[] fileList) {
+		String[] fileNames = new String[fileList.length];
+		for(int i = 0; i < fileList.length; i++) {
+			fileNames[i] = fileList[i].getName();
+		}
+		return fileNames;
+	}
+	
+	public static File[] getFilesInDirectory(File directory) {
+		String[] extensions = getFileExtensionsToShow();
+		if((extensions == null) || (extensions.length < 1)) {
+			return directory.listFiles();
+		}
+		File[] allFiles = directory.listFiles();
+		ArrayList<File> qualifiedFiles = new ArrayList<File>();
+		for(File f : allFiles) {
+			if(f.isDirectory() || isSupportedFormat(f)) {
+				qualifiedFiles.add(f);
+			}
+		}
+		File[] qualifiedFilesArray = new File[qualifiedFiles.size()];
+		return qualifiedFiles.toArray(qualifiedFilesArray);
+	}
+	
+	private File[] getListing() {
+		File[] list = getFilesInDirectory(dir);
 		if(list.length > maxEntriesPerView) {
 			if(showRange == ShowRange.NEXT) {
 				fromRange = fromRange + maxEntriesPerView;
@@ -80,7 +136,7 @@ public class UserDir {
 			if(toRange < list.length) {
 				showNextButton = true;
 			}
-			String[] newList = new String[toRange - fromRange + 1];
+			File[] newList = new File[toRange - fromRange + 1];
 			for(int i = (fromRange -1), j = 0; i < toRange; i++, j++) {
 				newList[j] = list[i];
 			}
@@ -91,15 +147,16 @@ public class UserDir {
 	
 	public KeyBoardAndResponseText getCurrentResponse() {
 		StringBuilder responseBuilder = new StringBuilder();
-		String[] list = getListing();
+		File[] list = getListing();
 		if(list.length > 0) {
 			responseBuilder.append("Please select one of the below items:");
 		}
 		else {
 			responseBuilder.append("This directory is empty. Please preform one of the below actions:\n\n/home\n/back");
 		}
-		if((fromRange > 0) && (toRange >= fromRange) && (dir.list().length > list.length)) {
-			responseBuilder.append("\nShowing items: " + fromRange + " to " + toRange + " of " + dir.list().length + "\n");
+		File[] dirList = getFilesInDirectory(dir);
+		if((fromRange > 0) && (toRange >= fromRange) && (dirList.length > list.length)) {
+			responseBuilder.append("\nShowing items: " + fromRange + " to " + toRange + " of " + dirList.length + "\n");
 		}
 		for(int i = 0; i < list.length; i++) {
 			responseBuilder.append("\n" + list[i]);
@@ -113,7 +170,7 @@ public class UserDir {
 			}
 			responseBuilder.append("\nEnter \"/next\" for more items.");
 		}
-		KeyBoardAndResponseText kbart = new KeyBoardAndResponseText(list, responseBuilder.toString());
+		KeyBoardAndResponseText kbart = new KeyBoardAndResponseText(getFileNamesForFileList(list), responseBuilder.toString());
 		return kbart;
 	}
 	
@@ -133,7 +190,7 @@ public class UserDir {
 	private String getMatchedItems(String searchTerm) {
 		ArrayList<String> matchedItemList = new ArrayList<String>();
 		if(dir.exists() && dir.isDirectory()) {
-			File fileList[] = dir.listFiles();
+			File fileList[] = getFilesInDirectory(dir);
 			for(int i = 0; i < fileList.length; i++) {
 				if(isMatching(searchTerm, fileList[i].getName())) {
 					matchedItemList.add("/" + (i + 1) + " - " + fileList[i].getName());
@@ -185,10 +242,11 @@ public class UserDir {
 			} catch (Exception e) {
 				num = 0;
 			}
-			if((num > 0) && (num <= dir.list().length)) {
-				File newFileOrDir = new File(dir.getPath() + File.separator + dir.list()[num - 1]);
+			String[] fileNameListInDir = getFileNamesForFileList(getFilesInDirectory(dir));
+			if((num > 0) && (num <= fileNameListInDir.length)) {
+				File newFileOrDir = new File(dir.getPath() + File.separator + fileNameListInDir[num - 1]);
 				if(newFileOrDir.exists()) {
-					if(newFileOrDir.isDirectory()) {
+					if(newFileOrDir.isDirectory() && (!sendDir)) {
 						dir = newFileOrDir;
 					}
 					else {
@@ -200,7 +258,7 @@ public class UserDir {
 		else {
 			File newFileOrDir = new File(dir.getPath() + File.separator + keyword);
 			if(newFileOrDir.exists()) {
-				if(newFileOrDir.isDirectory()) {
+				if(newFileOrDir.isDirectory() && (!sendDir)) {
 					dir = newFileOrDir;
 				}
 				else {

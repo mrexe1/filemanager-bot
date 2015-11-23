@@ -1,6 +1,7 @@
 package me.shib.java.app.telegram.bot.filemanager.main;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 
 import me.shib.java.app.telegram.bot.filemanager.navigator.KeyBoardAndResponseText;
@@ -18,6 +19,7 @@ import me.shib.java.lib.telegram.bot.types.TelegramFile;
 public class FileManagerBotModel implements TBotModel {
 	
 	public static final TBotConfig fileManagerConfig = TBotConfig.getFileConfig(new File("FileManagerBotConfig.json"));
+	private static LocalCacheManager lcm = new LocalCacheManager(8640000, "FileManagerBotCache");
 	
 	private static final long maxFileSize = 50000000;
 	private ChatActionHandler cah;
@@ -46,7 +48,50 @@ public class FileManagerBotModel implements TBotModel {
 	private void endChatAction() {
 		cah.endAction();
 	}
-
+	
+	private String getFileIdFromMessage(Message message) {
+		if(message == null) {
+			return null;
+		}
+		if(message.getDocument() != null) {
+			return message.getDocument().getFile_id();
+		}
+		else if(message.getPhoto() != null) {
+			return message.getPhoto()[message.getPhoto().length - 1].getFile_id();
+		}
+		else if(message.getVideo() != null) {
+			return message.getVideo().getFile_id();
+		}
+		else if(message.getVoice() != null) {
+			return message.getVoice().getFile_id();
+		}
+		else if(message.getAudio() != null) {
+			return message.getAudio().getFile_id();
+		}
+		return null;
+	}
+	
+	private void sendFileToUser(TelegramBotService tBotService, UserDir ud, File fileToSend) throws IOException {
+		if(fileToSend.length() > maxFileSize) {
+			tBotService.sendMessage(new ChatId(ud.getUserId()), "The file you requested is larger in size than the permissible limit:\n" + getFileInfo(fileToSend), null, true);
+		}
+		else {
+			startChatAction(tBotService, new ChatId(ud.getUserId()), ChatAction.upload_document);
+			String fileId = lcm.getDataforKey(UserDir.getHomeDir(fileManagerConfig).getPath(), fileToSend.getAbsolutePath());
+			if(fileId == null) {
+				Message fileSentMessage = tBotService.sendDocument(new ChatId(ud.getUserId()), new TelegramFile(fileToSend));
+				String sentFileId = getFileIdFromMessage(fileSentMessage);
+				if(sentFileId != null) {
+					lcm.putDataForKey(UserDir.getHomeDir(fileManagerConfig).getAbsolutePath(), fileToSend.getPath(), sentFileId);
+				}
+			}
+			else {
+				tBotService.sendDocument(new ChatId(ud.getUserId()), new TelegramFile(fileId.trim()));
+			}
+			endChatAction();
+		}
+	}
+	
 	public Message onReceivingMessage(TelegramBotService tBotService, Message message) {
 		Message returnMessage = null;
 		try {
@@ -86,19 +131,16 @@ public class FileManagerBotModel implements TBotModel {
 				File fileToSend = ud.getFile();
 				String consumableSuggestionMessage = ud.getConsumableSearchSuggestion();
 				if(fileToSend != null) {
-					int sentMessageId = 0;
-					returnMessage = tBotService.sendMessage(new ChatId(ud.getUserId()), "File Info:\n" + getFileInfo(fileToSend), null, true);
-					if(returnMessage != null) {
-						sentMessageId = returnMessage.getMessage_id();
-					}
-					if(fileToSend.length() > maxFileSize) {
-						returnMessage = tBotService.sendMessage(new ChatId(ud.getUserId()), "The file you requested is larger in size than the permissible limit.", null, true, sentMessageId);
+					if(fileToSend.isDirectory()) {
+						File[] filesToSend = UserDir.getFilesInDirectory(fileToSend);
+						for(File f : filesToSend) {
+							if(!f.isDirectory()) {
+								sendFileToUser(tBotService, ud, f);
+							}
+						}
 					}
 					else {
-						returnMessage = tBotService.sendMessage(new ChatId(ud.getUserId()), "Please wait while the file is being sent..." + getFileInfo(fileToSend), null, true, sentMessageId);
-						startChatAction(tBotService, new ChatId(ud.getUserId()), ChatAction.upload_document);
-						returnMessage = tBotService.sendDocument(new ChatId(ud.getUserId()), new TelegramFile(fileToSend), sentMessageId);
-						endChatAction();
+						sendFileToUser(tBotService, ud, fileToSend);
 					}
 				}
 				if(consumableSuggestionMessage != null) {
@@ -109,21 +151,27 @@ public class FileManagerBotModel implements TBotModel {
 				}
 			}
 		} catch (Exception e) {
-			// TODO: handle exception
+			e.printStackTrace();
 		}
 		return returnMessage;
 	}
 
 	public Message onMessageFromAdmin(TelegramBotService tBotService, Message message) {
-		return null;
+		return onReceivingMessage(tBotService, message);
 	}
 
 	public String getStatusMessage() {
 		return null;
 	}
 
-	public Message onCommand(TelegramBotService arg0, Message arg1) {
-		return null;
+	public Message onCommand(TelegramBotService tBotService, Message message) {
+		String text = message.getText();
+		if(text != null) {
+			if(text.equalsIgnoreCase("/status") || text.equalsIgnoreCase("/scr")) {
+				return null;
+			}
+		}
+		return onReceivingMessage(tBotService, message);
 	}
 
 }
