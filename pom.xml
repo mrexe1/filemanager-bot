@@ -5,9 +5,9 @@
 
 	<groupId>me.shib.java.app</groupId>
 	<artifactId>filemanager-bot</artifactId>
-	<version>1.0.1</version>
-	<name>File Manager Bot</name>
-	<description>A Telegram Bot to explore files from any directory of a computer it is deployed</description>
+	<version>1.0.2</version>
+	<name>File Manager - Telegram Bot</name>
+	<description>A Telegram Bot to explore files and download them from any computer</description>
 	<url>https://github.com/shiblymeeran/filemanager-bot</url>
 
 	<issueManagement>
@@ -84,7 +84,7 @@
 		<dependency>
 			<groupId>me.shib.java.lib</groupId>
 			<artifactId>easy-tbot</artifactId>
-			<version>0.8</version>
+			<version>0.8.1</version>
 		</dependency>
 	</dependencies>
 

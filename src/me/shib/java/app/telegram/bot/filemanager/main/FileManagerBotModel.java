@@ -7,6 +7,7 @@ import java.util.Date;
 import me.shib.java.app.telegram.bot.filemanager.navigator.KeyBoardAndResponseText;
 import me.shib.java.app.telegram.bot.filemanager.navigator.UserBase;
 import me.shib.java.app.telegram.bot.filemanager.navigator.UserDir;
+import me.shib.java.lib.common.utils.LocalFileCache;
 import me.shib.java.lib.telegram.bot.easybot.TBotConfig;
 import me.shib.java.lib.telegram.bot.easybot.TBotModel;
 import me.shib.java.lib.telegram.bot.service.TelegramBotService;
@@ -19,7 +20,7 @@ import me.shib.java.lib.telegram.bot.types.TelegramFile;
 public class FileManagerBotModel implements TBotModel {
 	
 	public static final TBotConfig fileManagerConfig = TBotConfig.getFileConfig(new File("FileManagerBotConfig.json"));
-	private static LocalCacheManager lcm = new LocalCacheManager(8640000, "FileManagerBotCache");
+	private static LocalFileCache localCache = new LocalFileCache(8640000, "FileManagerBotCache");
 	
 	private static final long maxFileSize = 50000000;
 	private ChatActionHandler cah;
@@ -77,12 +78,12 @@ public class FileManagerBotModel implements TBotModel {
 		}
 		else {
 			startChatAction(tBotService, new ChatId(ud.getUserId()), ChatAction.upload_document);
-			String fileId = lcm.getDataforKey(UserDir.getHomeDir(fileManagerConfig).getPath(), fileToSend.getAbsolutePath());
+			String fileId = localCache.getDataforKey(UserDir.getHomeDir(fileManagerConfig).getPath(), fileToSend.getAbsolutePath());
 			if(fileId == null) {
 				Message fileSentMessage = tBotService.sendDocument(new ChatId(ud.getUserId()), new TelegramFile(fileToSend));
 				String sentFileId = getFileIdFromMessage(fileSentMessage);
 				if(sentFileId != null) {
-					lcm.putDataForKey(UserDir.getHomeDir(fileManagerConfig).getAbsolutePath(), fileToSend.getPath(), sentFileId);
+					localCache.putDataForKey(UserDir.getHomeDir(fileManagerConfig).getAbsolutePath(), fileToSend.getPath(), sentFileId);
 				}
 			}
 			else {
