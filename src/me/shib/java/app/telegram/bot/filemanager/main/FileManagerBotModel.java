@@ -19,8 +19,8 @@ import me.shib.java.lib.telegram.bot.types.TelegramFile;
 
 public class FileManagerBotModel implements TBotModel {
 	
-	public static final TBotConfig fileManagerConfig = TBotConfig.getFileConfig(new File("FileManagerBotConfig.json"));
-	private static LocalFileCache localCache = new LocalFileCache(8640000, "FileManagerBotCache");
+	public static final TBotConfig fileManagerConfig = TBotConfig.getFileConfig(new File("filemanager-bot-config.json"));
+	private static LocalFileCache localCache = new LocalFileCache(8640000, "filemanager-bot-cache");
 	
 	private static final long maxFileSize = 50000000;
 	private ChatActionHandler cah;

@@ -159,7 +159,7 @@ public class UserDir {
 			responseBuilder.append("\nShowing items: " + fromRange + " to " + toRange + " of " + dirList.length + "\n");
 		}
 		for(int i = 0; i < list.length; i++) {
-			responseBuilder.append("\n" + list[i]);
+			responseBuilder.append("\n" + list[i].getName());
 		}
 		if(showPrevButton) {
 			responseBuilder.append("\n\nEnter \"/previous\" for previous set of items.");
