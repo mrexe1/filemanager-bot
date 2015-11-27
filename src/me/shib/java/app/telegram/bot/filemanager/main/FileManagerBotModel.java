@@ -19,11 +19,17 @@ import me.shib.java.lib.telegram.bot.types.TelegramFile;
 
 public class FileManagerBotModel implements TBotModel {
 	
-	public static final TBotConfig fileManagerConfig = TBotConfig.getFileConfig(new File("filemanager-bot-config.json"));
+	public static TBotConfig fileManagerConfig;
 	private static LocalFileCache localCache = new LocalFileCache(8640000, "filemanager-bot-cache");
 	
 	private static final long maxFileSize = 50000000;
 	private ChatActionHandler cah;
+	
+	public FileManagerBotModel(TBotConfig fileManagerConfig) {
+		if(FileManagerBotModel.fileManagerConfig == null) {
+			FileManagerBotModel.fileManagerConfig = fileManagerConfig;
+		}
+	}
 	
 	private static String humanReadableByteCount(long bytes, boolean si) {
 	    int unit = si ? 1000 : 1024;
@@ -161,10 +167,6 @@ public class FileManagerBotModel implements TBotModel {
 		return onReceivingMessage(tBotService, message);
 	}
 
-	public String getStatusMessage() {
-		return null;
-	}
-
 	public Message onCommand(TelegramBotService tBotService, Message message) {
 		String text = message.getText();
 		if(text != null) {
@@ -173,6 +175,11 @@ public class FileManagerBotModel implements TBotModel {
 			}
 		}
 		return onReceivingMessage(tBotService, message);
+	}
+
+	@Override
+	public Message sendStatusMessage(TelegramBotService tBotService, long chatId) {
+		return null;
 	}
 
 }
