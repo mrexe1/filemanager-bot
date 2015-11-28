@@ -163,18 +163,14 @@ public class FileManagerBotModel implements TBotModel {
 		return returnMessage;
 	}
 
+	@Override
 	public Message onMessageFromAdmin(TelegramBotService tBotService, Message message) {
-		return onReceivingMessage(tBotService, message);
+		return null;
 	}
-
+	
+	@Override
 	public Message onCommand(TelegramBotService tBotService, Message message) {
-		String text = message.getText();
-		if(text != null) {
-			if(text.equalsIgnoreCase("/status") || text.equalsIgnoreCase("/scr")) {
-				return null;
-			}
-		}
-		return onReceivingMessage(tBotService, message);
+		return null;
 	}
 
 	@Override
