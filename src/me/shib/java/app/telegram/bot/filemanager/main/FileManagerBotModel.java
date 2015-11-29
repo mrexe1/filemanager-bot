@@ -10,8 +10,8 @@ import me.shib.java.app.telegram.bot.filemanager.navigator.UserDir;
 import me.shib.java.lib.common.utils.LocalFileCache;
 import me.shib.java.lib.telegram.bot.easybot.TBotConfig;
 import me.shib.java.lib.telegram.bot.easybot.TBotModel;
-import me.shib.java.lib.telegram.bot.service.TelegramBotService;
-import me.shib.java.lib.telegram.bot.service.TelegramBotService.ChatAction;
+import me.shib.java.lib.telegram.bot.service.TelegramBot;
+import me.shib.java.lib.telegram.bot.service.TelegramBot.ChatAction;
 import me.shib.java.lib.telegram.bot.types.ChatId;
 import me.shib.java.lib.telegram.bot.types.Message;
 import me.shib.java.lib.telegram.bot.types.ReplyKeyboardMarkup;
@@ -47,7 +47,7 @@ public class FileManagerBotModel implements TBotModel {
 		return fileInfoBuilder.toString();
 	}
 	
-	private void startChatAction(TelegramBotService tBotService, ChatId chatId, ChatAction chatAction) {
+	private void startChatAction(TelegramBot tBotService, ChatId chatId, ChatAction chatAction) {
 		cah = new ChatActionHandler(tBotService, chatId, chatAction);
 		cah.start();
 	}
@@ -78,7 +78,7 @@ public class FileManagerBotModel implements TBotModel {
 		return null;
 	}
 	
-	private void sendFileToUser(TelegramBotService tBotService, UserDir ud, File fileToSend) throws IOException {
+	private void sendFileToUser(TelegramBot tBotService, UserDir ud, File fileToSend) throws IOException {
 		if(fileToSend.length() > maxFileSize) {
 			tBotService.sendMessage(new ChatId(ud.getUserId()), "The file you requested is larger in size than the permissible limit:\n" + getFileInfo(fileToSend), null, true);
 		}
@@ -99,7 +99,7 @@ public class FileManagerBotModel implements TBotModel {
 		}
 	}
 	
-	public Message onReceivingMessage(TelegramBotService tBotService, Message message) {
+	public Message onReceivingMessage(TelegramBot tBotService, Message message) {
 		Message returnMessage = null;
 		try {
 			if(message.getText() == null) {
@@ -164,17 +164,17 @@ public class FileManagerBotModel implements TBotModel {
 	}
 
 	@Override
-	public Message onMessageFromAdmin(TelegramBotService tBotService, Message message) {
+	public Message onMessageFromAdmin(TelegramBot tBotService, Message message) {
 		return null;
 	}
 	
 	@Override
-	public Message onCommand(TelegramBotService tBotService, Message message) {
+	public Message onCommand(TelegramBot tBotService, Message message) {
 		return null;
 	}
 
 	@Override
-	public Message sendStatusMessage(TelegramBotService tBotService, long chatId) {
+	public Message sendStatusMessage(TelegramBot tBotService, long chatId) {
 		return null;
 	}
 
