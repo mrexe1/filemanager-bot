@@ -5,7 +5,7 @@
 
 	<groupId>me.shib.java.app</groupId>
 	<artifactId>filemanager-bot</artifactId>
-	<version>1.2.1</version>
+	<version>1.2.2</version>
 	<name>File Manager - Telegram Bot</name>
 	<description>A Telegram Bot to explore files and download them from any computer</description>
 	<url>https://github.com/shiblymeeran/filemanager-bot</url>
@@ -58,6 +58,8 @@
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.6</version>
 				<configuration>
+					<finalName>${project.name}</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
