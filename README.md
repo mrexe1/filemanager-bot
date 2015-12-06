@@ -37,4 +37,4 @@ Create a file named **easy-tbot-config.json** and add the following:
 * **fileExtensionsToShow** - Limits the files that needs to be shown based on the mentioned extensions.
 
 ### Downloads [(Releases)](https://github.com/shiblymeeran/filemanager-bot/releases) ###
-* File Manager - Telegram Bot Executable JAR **(jar-with-dependencies)**
+* File Manager - Telegram Bot Executable JAR **(FileManagerBot.jar)**
