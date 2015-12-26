@@ -36,5 +36,5 @@ Create a file named **easy-tbot-config.json** and add the following:
 * **sendDir** - To send the entire directory's contents.
 * **fileExtensionsToShow** - Limits the files that needs to be shown based on the mentioned extensions.
 
-### Downloads [(Releases)](https://github.com/shiblymeeran/filemanager-bot/releases) ###
+### Downloads [(Releases)](https://github.com/shibme/filemanager-bot/releases) ###
 * File Manager - Telegram Bot Executable JAR **(FileManagerBot.jar)**
