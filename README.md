@@ -2,7 +2,7 @@
 A Telegram Bot to explore files and download them from any computer
 
 ### Build Status ###
-[![Build Status](https://travis-ci.org/shiblymeeran/filemanager-bot.svg)](https://travis-ci.org/shiblymeeran/filemanager-bot)
+[![Build Status](https://travis-ci.org/shibme/filemanager-bot.svg)](https://travis-ci.org/shibme/filemanager-bot)
 
 ### Configuration for Bot Owners ###
 Create a file named **easy-tbot-config.json** and add the following:
