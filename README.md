@@ -10,16 +10,16 @@ Create a file named **easy-tbot-config.json** and add the following:
 ```json
 [
 	{
-		"botLauncherclassName": "me.shib.java.app.telegram.bot.filemanager.main.FileManagerBotLaucher",
+		"botModelClassName": "me.shib.java.app.telegram.bot.filemanager.main.FileManagerBotModel",
 		"botApiToken": "YourBotApiTokenGoesHere",
 		"commandList": ["/start","/help","/status","/scr"],
 		"threadCount": 4,
-		"adminIdList": [000000000, 000000000],
+		"adminIdList": [1111111111111, 2222222222222],
 		"reportIntervalInSeconds": 604800,
 		"constants": {
 			"homeDirPath": "D:\\Music",
 			"maxEntriesPerView": "20",
-			"sendDir": "true",
+			"sendDir": "false",
 			"fileExtensionsToShow": "mp3,wav"
 		}
 	}
