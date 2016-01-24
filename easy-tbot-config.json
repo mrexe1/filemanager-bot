@@ -1,13 +1,13 @@
 [
 	{
-		"botModelClassName": "me.shib.java.app.telegram.bot.filemanager.main.FileManagerBotModel",
 		"botApiToken": "YourBotApiTokenGoesHere",
+		"botModelClassName": "me.shib.java.app.telegram.bot.filemanager.main.FileManagerBotModel",
 		"commandList": ["/start","/help","/status","/scr"],
 		"threadCount": 4,
-		"adminIdList": [1111111111111, 2222222222222],
+		"adminIdList": [0, 0],
 		"reportIntervalInSeconds": 604800,
 		"constants": {
-			"homeDirPath": "D:\\Music",
+			"homeDirPath": "D:\\Media",
 			"maxEntriesPerView": "20",
 			"sendDir": "false",
 			"fileExtensionsToShow": "mp3,wav"

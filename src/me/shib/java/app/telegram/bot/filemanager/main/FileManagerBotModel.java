@@ -13,22 +13,39 @@ import me.shib.java.lib.telegram.bot.types.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FileManagerBotModel extends BotModel {
 
     private static final long maxFileSize = 50000000;
-    public static BotConfig config;
-    private static LocalFileCache localCache = new LocalFileCache(8640000, "filemanager-bot-cache");
-    private ChatActionHandler cah;
 
-    public FileManagerBotModel() {
-        super();
-        if (config == null) {
-            config = getConfig();
-        }
+    private static Map<Long, LocalFileCache> localFileCacheMap;
+
+    private ChatActionHandler cah;
+    private LocalFileCache localCache;
+    private UserBase userBase;
+
+    public FileManagerBotModel(BotConfig config) {
+        super(config);
+        TelegramBot bot = getBot();
+        this.localCache = getLocalFileCache(bot.getIdentity().getId());
+        this.userBase = UserBase.getInstance(config, bot.getIdentity().getId());
     }
 
-    private static String humanReadableByteCount(long bytes, boolean si) {
+    private static synchronized LocalFileCache getLocalFileCache(long botId) {
+        if (localFileCacheMap == null) {
+            localFileCacheMap = new HashMap<>();
+        }
+        LocalFileCache cache = localFileCacheMap.get(botId);
+        if (cache == null) {
+            cache = new LocalFileCache(8640000, "filemanager-bot-cache-" + botId);
+            localFileCacheMap.put(botId, cache);
+        }
+        return cache;
+    }
+
+    private String humanReadableByteCount(long bytes, boolean si) {
         int unit = si ? 1000 : 1024;
         if (bytes < unit) return bytes + " B";
         int exp = (int) (Math.log(bytes) / Math.log(unit));
@@ -72,12 +89,12 @@ public class FileManagerBotModel extends BotModel {
             tBotService.sendMessage(new ChatId(ud.getUserId()), "The file you requested is larger in size than the permissible limit:\n" + getFileInfo(fileToSend), null, true);
         } else {
             startChatAction(tBotService, new ChatId(ud.getUserId()), ChatAction.upload_document);
-            String fileId = localCache.getDataforKey(UserDir.getHomeDir(getConfig()).getPath(), fileToSend.getAbsolutePath());
+            String fileId = localCache.getDataforKey(userBase.getHomeDir().getPath(), fileToSend.getAbsolutePath());
             if (fileId == null) {
                 Message fileSentMessage = tBotService.sendDocument(new ChatId(ud.getUserId()), new TelegramFile(fileToSend));
                 String sentFileId = getFileIdFromMessage(fileSentMessage);
                 if (sentFileId != null) {
-                    localCache.putDataForKey(UserDir.getHomeDir(getConfig()).getAbsolutePath(), fileToSend.getPath(), sentFileId);
+                    localCache.putDataForKey(userBase.getHomeDir().getAbsolutePath(), fileToSend.getPath(), sentFileId);
                 }
             } else {
                 tBotService.sendDocument(new ChatId(ud.getUserId()), new TelegramFile(fileId.trim()));
@@ -93,7 +110,7 @@ public class FileManagerBotModel extends BotModel {
             if (message.getText() == null) {
                 tBotService.sendMessage(new ChatId(message.getChat().getId()), "Please input a text");
             } else {
-                UserDir ud = UserBase.getUserDir(message.getChat().getId(), getConfig());
+                UserDir ud = userBase.getUserDir(message.getChat().getId());
                 ud.navigate(message.getText());
                 KeyBoardAndResponseText kbt = ud.getCurrentResponse();
                 String[] fileNameList = kbt.getFileList();
@@ -123,7 +140,7 @@ public class FileManagerBotModel extends BotModel {
                 String consumableSuggestionMessage = ud.getConsumableSearchSuggestion();
                 if (fileToSend != null) {
                     if (fileToSend.isDirectory()) {
-                        File[] filesToSend = UserDir.getFilesInDirectory(fileToSend);
+                        File[] filesToSend = userBase.getFilesInDirectory(fileToSend);
                         for (File f : filesToSend) {
                             if (!f.isDirectory()) {
                                 sendFileToUser(tBotService, ud, f);

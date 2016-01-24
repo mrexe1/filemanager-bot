@@ -10,8 +10,8 @@ Create a file named **easy-tbot-config.json** and add the following:
 ```json
 [
 	{
-		"botModelClassName": "me.shib.java.app.telegram.bot.filemanager.main.FileManagerBotModel",
 		"botApiToken": "YourBotApiTokenGoesHere",
+		"botModelClassName": "me.shib.java.app.telegram.bot.filemanager.main.FileManagerBotModel",
 		"commandList": ["/start","/help","/status","/scr"],
 		"threadCount": 4,
 		"adminIdList": [1111111111111, 2222222222222],

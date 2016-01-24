@@ -1,16 +1,10 @@
 package me.shib.java.app.telegram.bot.filemanager.navigator;
 
-import me.shib.java.app.telegram.bot.filemanager.main.FileManagerBotModel;
-import me.shib.java.lib.telegram.bot.easybot.BotConfig;
-
 import java.io.File;
 import java.util.ArrayList;
 
 public class UserDir {
 
-    private static File homeDir = null;
-    private static String[] fileExtensionsToShow = null;
-    private static boolean sendDir = false;
     private long userId;
     private File dir;
     private File file;
@@ -20,83 +14,21 @@ public class UserDir {
     private boolean showPrevButton;
     private ShowRange showRange;
     private String consumableSearchSuggestion;
-    private int maxEntriesPerView;
+    private long botId;
 
-    public UserDir(long userId) {
-        if (!sendDir) {
-            String sendDirString = FileManagerBotModel.config.getConstant("sendDir");
-            if ((sendDirString != null) && (sendDirString.equalsIgnoreCase("true"))) {
-                sendDir = true;
-            }
-        }
-        try {
-            maxEntriesPerView = Integer.parseInt(FileManagerBotModel.config.getConstant("maxEntriesPerView"));
-        } catch (Exception e) {
-            maxEntriesPerView = 20;
-        }
+    protected UserDir(long userId, long botId) {
         this.userId = userId;
-        this.dir = getHomeDir(FileManagerBotModel.config);
+        this.botId = botId;
+        UserBase userBase = UserBase.getUserBase(botId);
+        if (userBase != null) {
+            this.dir = userBase.getHomeDir();
+        }
         fromRange = 0;
         toRange = 0;
         showNextButton = false;
         showPrevButton = false;
         showRange = ShowRange.DEFAULT;
         consumableSearchSuggestion = null;
-    }
-
-    public static File getHomeDir(BotConfig config) {
-        if (homeDir == null) {
-            String homeDirPath = config.getConstant("homeDirPath");
-            if ((homeDirPath != null) && (!homeDirPath.isEmpty())) {
-                homeDir = new File(homeDirPath);
-                if (!homeDir.exists()) {
-                    homeDirPath = System.getProperty("user.dir");
-                    homeDir = new File(homeDirPath);
-                }
-            }
-        }
-        return homeDir;
-    }
-
-    private static String[] getFileExtensionsToShow() {
-        if (fileExtensionsToShow == null) {
-            String fileExtensionListToShow = FileManagerBotModel.config.getConstant("fileExtensionsToShow");
-            if (fileExtensionListToShow == null) {
-                return null;
-            }
-            fileExtensionsToShow = fileExtensionListToShow.split(",");
-        }
-        return fileExtensionsToShow;
-    }
-
-    private static boolean isSupportedFormat(File validationFile) {
-        String[] extensions = getFileExtensionsToShow();
-        if (extensions != null) {
-            for (String ext : extensions) {
-                if (validationFile.getName().toLowerCase().endsWith(ext.toLowerCase())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public static File[] getFilesInDirectory(File directory) {
-        String[] extensions = getFileExtensionsToShow();
-        if ((extensions == null) || (extensions.length < 1)) {
-            return directory.listFiles();
-        }
-        File[] allFiles = directory.listFiles();
-        ArrayList<File> qualifiedFiles = new ArrayList<>();
-        if (allFiles != null) {
-            for (File f : allFiles) {
-                if (f.isDirectory() || isSupportedFormat(f)) {
-                    qualifiedFiles.add(f);
-                }
-            }
-        }
-        File[] qualifiedFilesArray = new File[qualifiedFiles.size()];
-        return qualifiedFiles.toArray(qualifiedFilesArray);
     }
 
     private String[] getFileNamesForFileList(File[] fileList) {
@@ -108,7 +40,16 @@ public class UserDir {
     }
 
     private File[] getListing() {
-        File[] list = getFilesInDirectory(dir);
+        int maxEntriesPerView;
+        File[] list;
+        UserBase userBase = UserBase.getUserBase(botId);
+        if (userBase != null) {
+            maxEntriesPerView = userBase.getMaxEntriesPerView();
+            list = userBase.getFilesInDirectory(dir);
+        } else {
+            maxEntriesPerView = 20;
+            list = new File[0];
+        }
         if (list.length > maxEntriesPerView) {
             if (showRange == ShowRange.NEXT) {
                 fromRange = fromRange + maxEntriesPerView;
@@ -150,7 +91,13 @@ public class UserDir {
         } else {
             responseBuilder.append("This directory is empty. Please preform one of the below actions:\n\n/home\n/back");
         }
-        File[] dirList = getFilesInDirectory(dir);
+        File[] dirList;
+        UserBase userBase = UserBase.getUserBase(botId);
+        if (userBase != null) {
+            dirList = userBase.getFilesInDirectory(dir);
+        } else {
+            dirList = new File[0];
+        }
         if ((fromRange > 0) && (toRange >= fromRange) && (dirList.length > list.length)) {
             responseBuilder.append("\nShowing items: ").append(fromRange).append(" to ").append(toRange).append(" of ").append(dirList.length).append("\n");
         }
@@ -185,7 +132,13 @@ public class UserDir {
     private String getMatchedItems(String searchTerm) {
         ArrayList<String> matchedItemList = new ArrayList<>();
         if (dir.exists() && dir.isDirectory()) {
-            File fileList[] = getFilesInDirectory(dir);
+            File[] fileList;
+            UserBase userBase = UserBase.getUserBase(botId);
+            if (userBase != null) {
+                fileList = userBase.getFilesInDirectory(dir);
+            } else {
+                fileList = new File[0];
+            }
             for (int i = 0; i < fileList.length; i++) {
                 if (isMatching(searchTerm, fileList[i].getName())) {
                     matchedItemList.add("/" + (i + 1) + " - " + fileList[i].getName());
@@ -205,6 +158,15 @@ public class UserDir {
     }
 
     public void navigate(String keyword) {
+        File homeDir;
+        boolean sendDir = false;
+        UserBase userBase = UserBase.getUserBase(botId);
+        if (userBase != null) {
+            homeDir = userBase.getHomeDir();
+            sendDir = userBase.isSendDir();
+        } else {
+            homeDir = new File(System.getProperty("user.dir"));
+        }
         file = null;
         showNextButton = false;
         showPrevButton = false;
@@ -212,7 +174,7 @@ public class UserDir {
         if (keyword.equalsIgnoreCase("/back")) {
             fromRange = 0;
             toRange = 0;
-            if (!getHomeDir(FileManagerBotModel.config).getAbsolutePath().equalsIgnoreCase(dir.getAbsolutePath())) {
+            if (!homeDir.getAbsolutePath().equalsIgnoreCase(dir.getAbsolutePath())) {
                 File parentDir = dir.getParentFile();
                 if (parentDir != null) {
                     dir = parentDir;
@@ -221,7 +183,7 @@ public class UserDir {
         } else if (keyword.equalsIgnoreCase("/home") || keyword.equalsIgnoreCase("/start")) {
             fromRange = 0;
             toRange = 0;
-            dir = getHomeDir(FileManagerBotModel.config);
+            dir = homeDir;
         } else if (keyword.equalsIgnoreCase("/next")) {
             showRange = ShowRange.NEXT;
         } else if (keyword.equalsIgnoreCase("/previous")) {
@@ -233,7 +195,13 @@ public class UserDir {
             } catch (Exception e) {
                 num = 0;
             }
-            String[] fileNameListInDir = getFileNamesForFileList(getFilesInDirectory(dir));
+            File[] fileList;
+            if (userBase != null) {
+                fileList = userBase.getFilesInDirectory(dir);
+            } else {
+                fileList = new File[0];
+            }
+            String[] fileNameListInDir = getFileNamesForFileList(fileList);
             if ((num > 0) && (num <= fileNameListInDir.length)) {
                 File newFileOrDir = new File(dir.getPath() + File.separator + fileNameListInDir[num - 1]);
                 if (newFileOrDir.exists()) {
