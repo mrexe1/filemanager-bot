@@ -4,11 +4,10 @@ import me.shib.java.app.telegram.bot.filemanager.navigator.KeyBoardAndResponseTe
 import me.shib.java.app.telegram.bot.filemanager.navigator.UserBase;
 import me.shib.java.app.telegram.bot.filemanager.navigator.UserDir;
 import me.shib.java.lib.common.utils.LocalFileCache;
-import me.shib.java.lib.telegram.bot.easybot.BotConfig;
-import me.shib.java.lib.telegram.bot.easybot.BotModel;
-import me.shib.java.lib.telegram.bot.service.TelegramBot;
-import me.shib.java.lib.telegram.bot.service.TelegramBot.ChatAction;
-import me.shib.java.lib.telegram.bot.types.*;
+import me.shib.java.lib.jbots.BotConfig;
+import me.shib.java.lib.jbots.BotModel;
+import me.shib.java.lib.jtelebot.service.TelegramBot;
+import me.shib.java.lib.jtelebot.types.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -57,7 +56,7 @@ public class FileManagerBotModel extends BotModel {
         return ("Name: " + file.getName() + "\n") + "Size: " + humanReadableByteCount(file.length(), false) + "\n" + "Last Modified: " + new Date(file.lastModified());
     }
 
-    private void startChatAction(TelegramBot tBotService, ChatId chatId, ChatAction chatAction) {
+    private void startChatAction(TelegramBot tBotService, ChatId chatId, TelegramBot.ChatAction chatAction) {
         cah = new ChatActionHandler(tBotService, chatId, chatAction);
         cah.start();
     }
@@ -88,7 +87,7 @@ public class FileManagerBotModel extends BotModel {
         if (fileToSend.length() > maxFileSize) {
             tBotService.sendMessage(new ChatId(ud.getUserId()), "The file you requested is larger in size than the permissible limit:\n" + getFileInfo(fileToSend), null, true);
         } else {
-            startChatAction(tBotService, new ChatId(ud.getUserId()), ChatAction.upload_document);
+            startChatAction(tBotService, new ChatId(ud.getUserId()), TelegramBot.ChatAction.upload_document);
             String fileId = localCache.getDataforKey(userBase.getHomeDir().getPath(), fileToSend.getAbsolutePath());
             if (fileId == null) {
                 Message fileSentMessage = tBotService.sendDocument(new ChatId(ud.getUserId()), new TelegramFile(fileToSend));

@@ -1,17 +1,16 @@
 package me.shib.java.app.telegram.bot.filemanager.main;
 
-import me.shib.java.lib.telegram.bot.service.TelegramBot;
-import me.shib.java.lib.telegram.bot.service.TelegramBot.ChatAction;
-import me.shib.java.lib.telegram.bot.types.ChatId;
+import me.shib.java.lib.jtelebot.service.TelegramBot;
+import me.shib.java.lib.jtelebot.types.ChatId;
 
 public class ChatActionHandler extends Thread {
 
     private TelegramBot tbs;
     private ChatId chatId;
-    private ChatAction chatAction;
+    private TelegramBot.ChatAction chatAction;
     private boolean chatActionAlive;
 
-    public ChatActionHandler(TelegramBot tbs, ChatId chatId, ChatAction chatAction) {
+    public ChatActionHandler(TelegramBot tbs, ChatId chatId, TelegramBot.ChatAction chatAction) {
         this.tbs = tbs;
         this.chatId = chatId;
         this.chatAction = chatAction;

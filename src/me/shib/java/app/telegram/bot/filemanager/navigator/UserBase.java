@@ -1,6 +1,6 @@
 package me.shib.java.app.telegram.bot.filemanager.navigator;
 
-import me.shib.java.lib.telegram.bot.easybot.BotConfig;
+import me.shib.java.lib.jbots.BotConfig;
 
 import java.io.File;
 import java.util.ArrayList;
