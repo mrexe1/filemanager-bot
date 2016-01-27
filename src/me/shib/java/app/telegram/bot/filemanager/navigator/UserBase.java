@@ -1,6 +1,6 @@
 package me.shib.java.app.telegram.bot.filemanager.navigator;
 
-import me.shib.java.lib.jbots.BotConfig;
+import me.shib.java.lib.jbots.JBotConfig;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,7 +29,7 @@ public class UserBase {
         return userBaseMap.get(botId);
     }
 
-    public static synchronized UserBase getInstance(BotConfig config, long botId) {
+    public static synchronized UserBase getInstance(JBotConfig config, long botId) {
         if (config == null) {
             return null;
         }

@@ -4,8 +4,8 @@ import me.shib.java.app.telegram.bot.filemanager.navigator.KeyBoardAndResponseTe
 import me.shib.java.app.telegram.bot.filemanager.navigator.UserBase;
 import me.shib.java.app.telegram.bot.filemanager.navigator.UserDir;
 import me.shib.java.lib.common.utils.LocalFileCache;
-import me.shib.java.lib.jbots.BotConfig;
-import me.shib.java.lib.jbots.BotModel;
+import me.shib.java.lib.jbots.JBotConfig;
+import me.shib.java.lib.jbots.JBotModel;
 import me.shib.java.lib.jtelebot.service.TelegramBot;
 import me.shib.java.lib.jtelebot.types.*;
 
@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FileManagerBotModel extends BotModel {
+public class FileManagerBotModel extends JBotModel {
 
     private static final long maxFileSize = 50000000;
 
@@ -25,7 +25,7 @@ public class FileManagerBotModel extends BotModel {
     private LocalFileCache localCache;
     private UserBase userBase;
 
-    public FileManagerBotModel(BotConfig config) {
+    public FileManagerBotModel(JBotConfig config) {
         super(config);
         TelegramBot bot = getBot();
         this.localCache = getLocalFileCache(bot.getIdentity().getId());
