@@ -1,7 +1,7 @@
 [
 	{
 		"botApiToken": "YourBotApiTokenGoesHere",
-		"botModelClassName": "me.shib.java.app.telegram.bot.filemanager.main.FileManagerBotModel",
+		"botModelClassName": "me.shib.java.app.telegram.bot.filemanager.main.FileManagerBot",
 		"commandList": ["/start","/help","/status","/scr"],
 		"threadCount": 4,
 		"adminIdList": [0, 0],

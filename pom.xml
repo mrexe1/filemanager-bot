@@ -5,7 +5,7 @@
 
     <groupId>me.shib.java.app</groupId>
     <artifactId>filemanager-bot</artifactId>
-    <version>1.4.2</version>
+    <version>1.4.5</version>
     <name>FileManagerBot</name>
     <description>A Telegram Bot to explore files and download them from any computer</description>
     <url>https://github.com/shibme/filemanager-bot</url>
@@ -48,7 +48,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.5</version>
+                <version>3.5.1</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
@@ -127,7 +127,7 @@
         <dependency>
             <groupId>me.shib.java.lib</groupId>
             <artifactId>jbots</artifactId>
-            <version>0.5</version>
+            <version>0.5.2</version>
         </dependency>
     </dependencies>
 

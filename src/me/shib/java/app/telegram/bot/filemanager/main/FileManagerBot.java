@@ -4,8 +4,8 @@ import me.shib.java.app.telegram.bot.filemanager.navigator.KeyBoardAndResponseTe
 import me.shib.java.app.telegram.bot.filemanager.navigator.UserBase;
 import me.shib.java.app.telegram.bot.filemanager.navigator.UserDir;
 import me.shib.java.lib.common.utils.LocalFileCache;
+import me.shib.java.lib.jbots.JBot;
 import me.shib.java.lib.jbots.JBotConfig;
-import me.shib.java.lib.jbots.JBotModel;
 import me.shib.java.lib.jtelebot.service.TelegramBot;
 import me.shib.java.lib.jtelebot.types.*;
 
@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class FileManagerBotModel extends JBotModel {
+public class FileManagerBot extends JBot {
 
     private static final long maxFileSize = 50000000;
 
@@ -25,7 +25,7 @@ public class FileManagerBotModel extends JBotModel {
     private LocalFileCache localCache;
     private UserBase userBase;
 
-    public FileManagerBotModel(JBotConfig config) {
+    public FileManagerBot(JBotConfig config) {
         super(config);
         TelegramBot bot = getBot();
         this.localCache = getLocalFileCache(bot.getIdentity().getId());
@@ -38,7 +38,7 @@ public class FileManagerBotModel extends JBotModel {
         }
         LocalFileCache cache = localFileCacheMap.get(botId);
         if (cache == null) {
-            cache = new LocalFileCache(8640000, "filemanager-bot-cache-" + botId);
+            cache = new LocalFileCache(8640000, "filemanager-bot-cache-" + botId, true);
             localFileCacheMap.put(botId, cache);
         }
         return cache;
@@ -56,7 +56,7 @@ public class FileManagerBotModel extends JBotModel {
         return ("Name: " + file.getName() + "\n") + "Size: " + humanReadableByteCount(file.length(), false) + "\n" + "Last Modified: " + new Date(file.lastModified());
     }
 
-    private void startChatAction(TelegramBot tBotService, ChatId chatId, TelegramBot.ChatAction chatAction) {
+    private void startChatAction(TelegramBot tBotService, ChatId chatId, ChatAction chatAction) {
         cah = new ChatActionHandler(tBotService, chatId, chatAction);
         cah.start();
     }
@@ -87,7 +87,7 @@ public class FileManagerBotModel extends JBotModel {
         if (fileToSend.length() > maxFileSize) {
             tBotService.sendMessage(new ChatId(ud.getUserId()), "The file you requested is larger in size than the permissible limit:\n" + getFileInfo(fileToSend), null, true);
         } else {
-            startChatAction(tBotService, new ChatId(ud.getUserId()), TelegramBot.ChatAction.upload_document);
+            startChatAction(tBotService, new ChatId(ud.getUserId()), ChatAction.upload_document);
             String fileId = localCache.getDataforKey(userBase.getHomeDir().getPath(), fileToSend.getAbsolutePath());
             if (fileId == null) {
                 Message fileSentMessage = tBotService.sendDocument(new ChatId(ud.getUserId()), new TelegramFile(fileToSend));

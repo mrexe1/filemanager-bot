@@ -12,7 +12,7 @@ Create a file named `jbots-config.json` and add the following
 [
 	{
 		"botApiToken": "YourBotApiTokenGoesHere",
-		"botModelClassName": "me.shib.java.app.telegram.bot.filemanager.main.FileManagerBotModel",
+		"botModelClassName": "me.shib.java.app.telegram.bot.filemanager.main.FileManagerBot",
 		"commandList": ["/start","/help","/status","/scr"],
 		"threadCount": 4,
 		"adminIdList": [1111111111111, 2222222222222],
