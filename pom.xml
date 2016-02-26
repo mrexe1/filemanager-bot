@@ -7,7 +7,7 @@
     <artifactId>filemanager-bot</artifactId>
     <version>1.4.5</version>
     <name>FileManagerBot</name>
-    <description>A Telegram Bot to explore files and download them from any computer</description>
+    <description>A Telegram Bot to explore files and download them from any PC or server</description>
     <url>https://github.com/shibme/filemanager-bot</url>
 
     <issueManagement>
@@ -127,7 +127,7 @@
         <dependency>
             <groupId>me.shib.java.lib</groupId>
             <artifactId>jbots</artifactId>
-            <version>0.5.2</version>
+            <version>0.5.3</version>
         </dependency>
     </dependencies>
 

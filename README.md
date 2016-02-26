@@ -1,8 +1,9 @@
 # File Manager - Telegram Bot
 [![Build Status](https://travis-ci.org/shibme/filemanager-bot.svg)](https://travis-ci.org/shibme/filemanager-bot)
 [![Dependency Status](https://www.versioneye.com/user/projects/56adffd57e03c7003db69636/badge.svg?style=flat)](https://www.versioneye.com/user/projects/56adffd57e03c7003db69636)
+[![Percentage of issues still open](http://isitmaintained.com/badge/open/shibme/filemanager-bot.svg)](http://isitmaintained.com/project/shibme/filemanager-bot "Percentage of issues still open")
 
-A Telegram Bot to explore files and download them from any computer
+A Telegram Bot to explore files and download them from any PC or server
 
 ### Build Status
 
@@ -36,6 +37,3 @@ Create a file named `jbots-config.json` and add the following
 * `maxEntriesPerView` - The number of items to be listed per view.
 * `sendDir` - To send the entire directory's contents.
 * `fileExtensionsToShow` - Limits the files that needs to be shown based on the mentioned extensions.
-
-### Downloads [(Releases)](https://github.com/shibme/filemanager-bot/releases)
-* File Manager - Telegram Bot Executable JAR `FileManagerBot.jar`

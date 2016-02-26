@@ -85,7 +85,7 @@ public class FileManagerBot extends JBot {
 
     private void sendFileToUser(TelegramBot tBotService, UserDir ud, File fileToSend) throws IOException {
         if (fileToSend.length() > maxFileSize) {
-            tBotService.sendMessage(new ChatId(ud.getUserId()), "The file you requested is larger in size than the permissible limit:\n" + getFileInfo(fileToSend), null, true);
+            tBotService.sendMessage(new ChatId(ud.getUserId()), "The file you requested is larger in size than the permissible limit:\n" + getFileInfo(fileToSend), false, null, true);
         } else {
             startChatAction(tBotService, new ChatId(ud.getUserId()), ChatAction.upload_document);
             String fileId = localCache.getDataforKey(userBase.getHomeDir().getPath(), fileToSend.getAbsolutePath());
@@ -150,9 +150,9 @@ public class FileManagerBot extends JBot {
                     }
                 }
                 if (consumableSuggestionMessage != null) {
-                    returnMessage = tBotService.sendMessage(new ChatId(ud.getUserId()), consumableSuggestionMessage, null, true);
+                    returnMessage = tBotService.sendMessage(new ChatId(ud.getUserId()), consumableSuggestionMessage, false, null, true);
                 } else {
-                    returnMessage = tBotService.sendMessage(new ChatId(ud.getUserId()), kbt.getResponse(), null, true, 0, new ReplyKeyboardMarkup(keyboard, true, true));
+                    returnMessage = tBotService.sendMessage(new ChatId(ud.getUserId()), kbt.getResponse(), false, null, true, 0, new ReplyKeyboardMarkup(keyboard, true, true));
                 }
             }
         } catch (Exception e) {
