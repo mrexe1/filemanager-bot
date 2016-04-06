@@ -6,6 +6,7 @@ import me.shib.java.app.telegram.bot.filemanager.navigator.UserDir;
 import me.shib.java.lib.common.utils.LocalFileCache;
 import me.shib.java.lib.jbots.JBot;
 import me.shib.java.lib.jbots.JBotConfig;
+import me.shib.java.lib.jbots.MessageHandler;
 import me.shib.java.lib.jtelebot.service.TelegramBot;
 import me.shib.java.lib.jtelebot.types.*;
 
@@ -27,7 +28,6 @@ public class FileManagerBot extends JBot {
 
     public FileManagerBot(JBotConfig config) {
         super(config);
-        TelegramBot bot = getBot();
         this.localCache = getLocalFileCache(bot.getIdentity().getId());
         this.userBase = UserBase.getInstance(config, bot.getIdentity().getId());
     }
@@ -42,6 +42,84 @@ public class FileManagerBot extends JBot {
             localFileCacheMap.put(botId, cache);
         }
         return cache;
+    }
+
+    @Override
+    public MessageHandler onMessage(Message message) {
+        return new MessageHandler(message) {
+            @Override
+            public boolean onCommandFromAdmin(String command) {
+                return false;
+            }
+
+            @Override
+            public boolean onCommandFromUser(String command) {
+                return false;
+            }
+
+            @Override
+            public boolean onMessageFromAdmin() {
+                return onMessageFromUser();
+            }
+
+            @Override
+            public boolean onMessageFromUser() {
+                try {
+                    if (message.getText() == null) {
+                        bot.sendMessage(new ChatId(message.getChat().getId()), "Please input a text");
+                    } else {
+                        UserDir ud = userBase.getUserDir(message.getChat().getId());
+                        ud.navigate(message.getText());
+                        KeyBoardAndResponseText kbt = ud.getCurrentResponse();
+                        String[] fileNameList = kbt.getFileList();
+                        String[] navigationButtons;
+                        if (ud.isShowNextButton() && ud.isShowPrevButton()) {
+                            navigationButtons = new String[4];
+                            navigationButtons[2] = "/previous";
+                            navigationButtons[3] = "/next";
+                        } else if (ud.isShowNextButton() || ud.isShowPrevButton()) {
+                            navigationButtons = new String[3];
+                            if (ud.isShowPrevButton()) {
+                                navigationButtons[2] = "/previous";
+                            } else {
+                                navigationButtons[2] = "/next";
+                            }
+                        } else {
+                            navigationButtons = new String[2];
+                        }
+                        navigationButtons[0] = "/home";
+                        navigationButtons[1] = "/back";
+                        String[][] keyboard = new String[fileNameList.length + 1][1];
+                        keyboard[0] = navigationButtons;
+                        for (int i = 0; i < fileNameList.length; i++) {
+                            keyboard[i + 1][0] = fileNameList[i];
+                        }
+                        File fileToSend = ud.getFile();
+                        String consumableSuggestionMessage = ud.getConsumableSearchSuggestion();
+                        if (fileToSend != null) {
+                            if (fileToSend.isDirectory()) {
+                                File[] filesToSend = userBase.getFilesInDirectory(fileToSend);
+                                for (File f : filesToSend) {
+                                    if (!f.isDirectory()) {
+                                        sendFileToUser(bot, ud, f);
+                                    }
+                                }
+                            } else {
+                                sendFileToUser(bot, ud, fileToSend);
+                            }
+                        }
+                        if (consumableSuggestionMessage != null) {
+                            bot.sendMessage(new ChatId(ud.getUserId()), consumableSuggestionMessage, false, null, true);
+                        } else {
+                            bot.sendMessage(new ChatId(ud.getUserId()), kbt.getResponse(), false, null, true, 0, new ReplyKeyboardMarkup(keyboard, true, true));
+                        }
+                    }
+                    return true;
+                } catch (Exception e) {
+                    return false;
+                }
+            }
+        };
     }
 
     private String humanReadableByteCount(long bytes, boolean si) {
@@ -103,11 +181,10 @@ public class FileManagerBot extends JBot {
     }
 
     public Message onReceivingMessage(Message message) {
-        TelegramBot tBotService = getBot();
         Message returnMessage = null;
         try {
             if (message.getText() == null) {
-                tBotService.sendMessage(new ChatId(message.getChat().getId()), "Please input a text");
+                bot.sendMessage(new ChatId(message.getChat().getId()), "Please input a text");
             } else {
                 UserDir ud = userBase.getUserDir(message.getChat().getId());
                 ud.navigate(message.getText());
@@ -142,17 +219,17 @@ public class FileManagerBot extends JBot {
                         File[] filesToSend = userBase.getFilesInDirectory(fileToSend);
                         for (File f : filesToSend) {
                             if (!f.isDirectory()) {
-                                sendFileToUser(tBotService, ud, f);
+                                sendFileToUser(bot, ud, f);
                             }
                         }
                     } else {
-                        sendFileToUser(tBotService, ud, fileToSend);
+                        sendFileToUser(bot, ud, fileToSend);
                     }
                 }
                 if (consumableSuggestionMessage != null) {
-                    returnMessage = tBotService.sendMessage(new ChatId(ud.getUserId()), consumableSuggestionMessage, false, null, true);
+                    returnMessage = bot.sendMessage(new ChatId(ud.getUserId()), consumableSuggestionMessage, false, null, true);
                 } else {
-                    returnMessage = tBotService.sendMessage(new ChatId(ud.getUserId()), kbt.getResponse(), false, null, true, 0, new ReplyKeyboardMarkup(keyboard, true, true));
+                    returnMessage = bot.sendMessage(new ChatId(ud.getUserId()), kbt.getResponse(), false, null, true, 0, new ReplyKeyboardMarkup(keyboard, true, true));
                 }
             }
         } catch (Exception e) {
@@ -169,21 +246,6 @@ public class FileManagerBot extends JBot {
     @Override
     public boolean onChosenInlineResult(ChosenInlineResult chosenInlineResult) {
         return false;
-    }
-
-    @Override
-    public Message onMessageFromAdmin(Message message) {
-        return null;
-    }
-
-    @Override
-    public Message onCommand(Message message) {
-        return null;
-    }
-
-    @Override
-    public Message sendStatusMessage(long chatId) {
-        return null;
     }
 
 }

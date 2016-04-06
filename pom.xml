@@ -127,7 +127,7 @@
         <dependency>
             <groupId>me.shib.java.lib</groupId>
             <artifactId>jbots</artifactId>
-            <version>0.5.3</version>
+            <version>0.6</version>
         </dependency>
     </dependencies>
 
